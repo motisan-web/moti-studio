@@ -5,17 +5,20 @@
 ---
 
 ## 直近で完了したこと
-- プロジェクト設計の議論（機能・UI・認証・分析軸）
-- 基本ファイル構成の作成（index.php / .htaccess / .gitignore / ディレクトリ群）
-- CLAUDE.md・.claude-codex 構造の初期化
+- プロジェクト全体の設計議論・仕様決定（このチャット）
+- 基本ファイル構成・ドキュメント構造の初期化
+- GitHub リポジトリ作成（motisan-web/moti-studio, public）
+- サブドメイン割当: d00e.motisan.info
+- deploy.yml 生成・GitHub Secrets 登録・初回デプロイ成功
 
 ## 次にやること
-- サブドメイン決定 → GitHubリポジトリ作成 → deploy.yml 設定（new-php-project スキルの続き）
-- UIデザインの詳細を詰める
+UIデザインの詳細を詰める（3ペインレイアウト、各パネルの構成要素）
 
 ## 注意事項・既知の仕様
-- `data/` は .gitignore 対象（JSONデータ一切をgit管理外に）
-- `data/drafts/` がClaudeの投稿モード用MDディレクトリ
-- 分析は非リアルタイム（トークン余裕があるときに処理）
-- アーカイブはUI非表示のみ（アーカイブ一覧画面なし）
-- ロックアウト: 5回失敗/15分、既存セッションは強制ログアウトしない
+- ローカル: git15.local / 本番: d00e.motisan.info
+- `data/` は .gitignore 対象（将来 private submodule 化予定）
+- `data/drafts/` がClaude投稿モード用MDディレクトリ、区切り `---`、フロントマターで title/account 指定
+- 分析は非リアルタイム（17軸候補からClaudeが5軸選んでスコア付け、5角形グラフ表示）
+- アーカイブはUI非表示のみ（一覧画面なし）
+- 認証: 5回失敗/15分ロックアウト、既存セッション強制ログアウトなし
+- Xserverで初回パーミッション手動設定が必要（ファイルマネージャーで644/755）
