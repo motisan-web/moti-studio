@@ -79,6 +79,7 @@ data/
     { "body": "やっぱり面白い", "created_at": "2026-05-05T10:00:00" }
   ],
   "archive_at": null,
+  "strength": null,
   "created_at": "2026-05-04T12:00:00",
   "updated_at": "2026-05-04T12:00:00"
 }
@@ -99,6 +100,7 @@ data/
 | `repost` | bool | 転載投稿かどうか。面白投稿カテゴリに必要 |
 | `repost_from` | string \| null | 転載元の説明（任意） |
 | `archive_at` | string \| null | アーカイブ期限（ISO 8601）。null で無期限 |
+| `strength` | int \| null | 投稿強度 1〜10。Claudeが評価モードで付与。null = 未付与 |
 | `categorized_at` | string \| null | カテゴリ付与済み日時。null = 未処理 |
 | `created_at` | string | 作成日時 |
 | `updated_at` | string | 最終更新日時 |
