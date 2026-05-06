@@ -1,10 +1,18 @@
 # 現在の作業状態
 
-> 最終更新: 2026-05-06
+> 最終更新: 2026-05-07
 
 ---
 
 ## 直近で完了したこと
+
+（`change/phase6-sp-split.md`）
+
+- **PC/SP ビュー分離** — `index.php` をルーターのみに、HTML を `views/pc.php` / `views/sp.php` へ分割
+  - UA判定 + `?sp=1` パラメータで views/ を切り替え
+  - `views/pc.php`: 旧 index.php の PC UI をクリーンアップして移植（モバイル試行コード除去）
+  - `views/sp.php`: ログイン動作 + 「スマホUI準備中」プレースホルダー
+  - SP UI は今後 views/sp.php をゼロから設計・実装する方針
 
 （`change/phase3-ui.md`）
 
@@ -41,9 +49,9 @@
 
 ## 次にやること
 
+- **スマホUI実装** — `views/sp.php` をゼロから設計・実装（縦積みレイアウト、投稿一覧 → タップで詳細）
 - Xserver 初回デプロイ実施（FTPでアップロード → パーミッション設定 → 動作確認）
 - data/ サブモジュール化（プライベートリポジトリ作成後に `tools/submodule-setup.sh` 実行）
-- スマホ対応（後回し・最終的には作る）
 
 ---
 
@@ -63,8 +71,12 @@
 
 ```
 config.php                   ← DATA_DIR系パス定数
-index.php                    ← メインアプリ（認証チェック + ライトテーマ + API連携JS）
+index.php                    ← ルーター（UA判定 + include views/pc.php or sp.php）
 index.html                   ← 静的デモ（設計参照用、ライトテーマ済み）
+
+views/
+  pc.php                     ← PC用3ペインUI（認証・全機能実装済み）
+  sp.php                     ← SP用UI（ログイン動作 + 「準備中」プレースホルダー）
 
 api/
   .htaccess                  ← 全リクエストを index.php へ
