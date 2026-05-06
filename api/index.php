@@ -16,10 +16,11 @@ $method   = $_SERVER['REQUEST_METHOD'];
 $resource = $segments[0] ?? '';
 
 match ($resource) {
-    'auth'     => require __DIR__ . '/handlers/auth.php',
-    'posts'    => require __DIR__ . '/handlers/posts.php',
-    'accounts' => require __DIR__ . '/handlers/accounts.php',
-    'evals'    => require __DIR__ . '/handlers/evals.php',
-    'search'   => require __DIR__ . '/handlers/search.php',
-    default    => res_err('Not found', 404),
+    'auth'      => require __DIR__ . '/handlers/auth.php',
+    'posts'     => require __DIR__ . '/handlers/posts.php',
+    'accounts'  => require __DIR__ . '/handlers/accounts.php',
+    'evals'     => require __DIR__ . '/handlers/evals.php',
+    'search'    => require __DIR__ . '/handlers/search.php',
+    'reactions' => require __DIR__ . '/handlers/reactions.php',
+    default     => res_err('Not found', 404),
 };

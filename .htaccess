@@ -1,1 +1,19 @@
 DirectoryIndex index.php
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # data/, api/lib/, api/cli/, .claude-codex/ への直接HTTPアクセスを遮断
+    RewriteRule ^data/             - [F,L]
+    RewriteRule ^api/lib/          - [F,L]
+    RewriteRule ^api/cli/          - [F,L]
+    RewriteRule ^\.claude-codex/   - [F,L]
+</IfModule>
+
+# PHP 設定（Xserver用）
+<IfModule mod_php8.c>
+    php_value default_charset "UTF-8"
+    php_flag display_errors Off
+    php_flag log_errors On
+</IfModule>

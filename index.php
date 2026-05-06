@@ -37,6 +37,7 @@ if ($is_auth) {
       --accent: #6b5ce7;
       --accent2: #7c6aff;
       --react-active: #ede9ff;
+      --danger: #e0506a;
     }
 
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
@@ -57,11 +58,15 @@ if ($is_auth) {
     .sidebar.col .logo { display: none; }
     .icon-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 5px; border-radius: 6px; line-height: 1; font-size: 15px; }
     .icon-btn:hover { color: var(--text); background: var(--surface2); }
-    .sb-account { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    .icon-btn.danger:hover { color: var(--danger); }
+    .sb-account { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; position: relative; transition: background .12s; }
+    .sb-account:hover { background: var(--surface2); }
     .sidebar.col .sb-account { justify-content: center; padding: 12px 0; }
     .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
-    .acc-name { font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .acc-name { font-size: 13px; font-weight: 600; white-space: nowrap; flex: 1; }
     .sidebar.col .acc-name { display: none; }
+    .acc-caret { font-size: 10px; color: var(--muted); }
+    .sidebar.col .acc-caret { display: none; }
     .sb-nav { padding: 8px; flex: 1; overflow-y: auto; }
     .sec-title { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: 12px 10px 4px; white-space: nowrap; }
     .sidebar.col .sec-title { display: none; }
@@ -71,6 +76,16 @@ if ($is_auth) {
     .sidebar.col .nav-item { justify-content: center; padding: 9px 0; }
     .nav-icon { font-size: 15px; flex-shrink: 0; }
     .sidebar.col .nav-label { display: none; }
+
+    /* account switcher dropdown */
+    .acc-dropdown { position: absolute; top: calc(100% + 4px); left: 8px; right: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.1); z-index: 300; display: none; overflow: hidden; }
+    .acc-dropdown.open { display: block; }
+    .acc-drop-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; font-size: 13px; transition: background .1s; }
+    .acc-drop-item:hover { background: var(--surface2); }
+    .acc-drop-item.active { color: var(--accent); }
+    .acc-drop-item .avatar { width: 26px; height: 26px; font-size: 11px; }
+    .acc-drop-divider { border-top: 1px solid var(--border); }
+    .acc-drop-edit { color: var(--muted); font-size: 12px; }
 
     /* ── MAIN ── */
     .main-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
@@ -121,12 +136,16 @@ if ($is_auth) {
     .palette-grid { display: grid; grid-template-columns: repeat(5, 36px); gap: 3px; }
     .p-emoji { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: background .1s; }
     .p-emoji:hover { background: var(--surface2); }
+    .p-custom-emoji { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .1s; overflow: hidden; }
+    .p-custom-emoji img { width: 24px; height: 24px; object-fit: contain; }
+    .p-custom-emoji:hover { background: var(--surface2); }
 
     /* ── RIGHT PANEL ── */
     .right-panel { width: 0; overflow: hidden; border-left: 1px solid transparent; background: var(--surface); transition: width .22s ease, border-color .22s; display: flex; flex-direction: column; flex-shrink: 0; }
     .right-panel.open { width: var(--panel-width); border-color: var(--border); }
     .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 0 18px; height: var(--header-h); border-bottom: 1px solid var(--border); min-width: var(--panel-width); flex-shrink: 0; }
     .panel-title { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .panel-head-right { display: flex; align-items: center; gap: 4px; }
     .panel-body { flex: 1; overflow-y: auto; padding: 22px; min-width: var(--panel-width); }
 
     /* detail */
@@ -175,6 +194,7 @@ if ($is_auth) {
     /* evaluation */
     .eval-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 14px; }
     .eval-comment { font-size: 13px; line-height: 1.75; color: var(--text); margin-bottom: 18px; padding: 12px 14px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--accent); }
+    .eval-radar { margin-bottom: 20px; }
     .eval-axes { display: flex; flex-direction: column; gap: 11px; }
     .eval-row-head { display: flex; justify-content: space-between; margin-bottom: 5px; }
     .eval-axis-label { font-size: 12px; color: var(--text); }
@@ -201,14 +221,23 @@ if ($is_auth) {
     .form-submit { background: var(--accent); color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .12s; }
     .form-submit:hover { background: var(--accent2); }
     .form-submit:disabled { opacity: .5; cursor: not-allowed; }
+    .form-submit-danger { background: var(--danger); color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .archive-row { display: flex; gap: 6px; align-items: center; }
+    .archive-row .form-input { flex: 1; }
+
+    /* account edit */
+    .color-preview { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
 
     .mgmt-section { margin-bottom: 28px; }
     .mgmt-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
     .mgmt-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); margin-bottom: 6px; font-size: 13px; }
     .mgmt-row-left { display: flex; align-items: center; gap: 8px; }
     .mgmt-count { font-size: 11px; color: var(--muted); }
-    .emoji-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 24px; text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+    .emoji-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 24px; text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 10px; cursor: pointer; transition: border-color .12s; }
+    .emoji-upload-box:hover { border-color: var(--accent); }
     .emoji-upload-box span { font-size: 24px; display: block; margin-bottom: 6px; }
+    .emoji-upload-box input[type=file] { display: none; }
+    .emoji-preview { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); }
     .empty-state { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 13px; }
 
     ::-webkit-scrollbar { width: 5px; }
@@ -280,9 +309,11 @@ if ($is_auth) {
     <span class="logo">moti studio</span>
     <button class="icon-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
   </div>
-  <div class="sb-account">
-    <div class="avatar" style="background:<?= htmlspecialchars($account['color'] ?? '#6b5ce7') ?>"><?= htmlspecialchars(mb_substr($account['display_name'] ?? $account_id, 0, 1)) ?></div>
-    <span class="acc-name"><?= htmlspecialchars($account['display_name'] ?? $account_id) ?></span>
+  <div class="sb-account" id="sbAccount" onclick="toggleAccDropdown(event)">
+    <div class="avatar" id="sbAvatar" style="background:<?= htmlspecialchars($account['color'] ?? '#6b5ce7') ?>"><?= htmlspecialchars(mb_substr($account['display_name'] ?? $account_id, 0, 1)) ?></div>
+    <span class="acc-name" id="sbAccName"><?= htmlspecialchars($account['display_name'] ?? $account_id) ?></span>
+    <span class="acc-caret">▾</span>
+    <div class="acc-dropdown" id="accDropdown"></div>
   </div>
   <nav class="sb-nav">
     <div class="sec-title">メニュー</div>
@@ -292,6 +323,7 @@ if ($is_auth) {
     <div class="nav-item active" id="navAll" onclick="filterCat(this,'all')"><span class="nav-icon">🌐</span><span class="nav-label">すべて</span></div>
     <div id="catNavItems"></div>
     <div class="sec-title">管理</div>
+    <div class="nav-item" onclick="openAccountEdit()"><span class="nav-icon">👤</span><span class="nav-label">アカウント設定</span></div>
     <div class="nav-item" onclick="openCatMgmt()"><span class="nav-icon">🏷</span><span class="nav-label">カテゴリ管理</span></div>
     <div class="nav-item" onclick="openReactMgmt()"><span class="nav-icon">😀</span><span class="nav-label">リアクション管理</span></div>
     <div class="nav-item" onclick="doLogout()"><span class="nav-icon">🚪</span><span class="nav-label">ログアウト</span></div>
@@ -310,7 +342,10 @@ if ($is_auth) {
     <aside class="right-panel" id="rightPanel">
       <div class="panel-head">
         <span class="panel-title" id="panelTitle">投稿詳細</span>
-        <button class="icon-btn" onclick="closePanel()">✕</button>
+        <div class="panel-head-right">
+          <div id="panelActions"></div>
+          <button class="icon-btn" onclick="closePanel()">✕</button>
+        </div>
       </div>
       <div class="panel-body" id="panelBody"></div>
     </aside>
@@ -349,12 +384,14 @@ const LABEL_TYPES = [
 
 const PALETTE_EMOJIS = ['💡','✨','🔥','👀','🤔','💭','🎯','🌟','💪','😂','❤️','🙏','👏','🤯','💯','🦋','🌊','🎵','🍀','⚡'];
 
-let posts           = [];
-let currentFilter   = 'all';
-let currentView     = 'timeline';
-let activeId        = null;
-let paletteTargetId = null;
-let selectedCats    = [];
+let posts             = [];
+let currentFilter     = 'all';
+let currentView       = 'timeline';
+let currentAccountFilter = 'all';
+let activeId          = null;
+let paletteTargetId   = null;
+let selectedCats      = [];
+let customEmojis      = [];
 
 // ── API ──────────────────────────────────────────────────
 
@@ -362,6 +399,13 @@ async function api(method, path, body = null) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (body) opts.body = JSON.stringify(body);
   const res  = await fetch('/api/' + path, opts);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'エラーが発生しました');
+  return json.data;
+}
+
+async function apiUpload(path, formData) {
+  const res  = await fetch('/api/' + path, { method: 'POST', body: formData });
   const json = await res.json();
   if (!res.ok) throw new Error(json.error || 'エラーが発生しました');
   return json.data;
@@ -377,9 +421,17 @@ function buildCatNav() {
   ).join('');
 }
 
-function buildPalette() {
-  document.getElementById('paletteGrid').innerHTML = PALETTE_EMOJIS.map(e =>
+async function buildPalette() {
+  try {
+    const data = await api('GET', 'reactions');
+    customEmojis = data.emojis || [];
+  } catch { customEmojis = []; }
+
+  const standard = PALETTE_EMOJIS.map(e =>
     `<div class="p-emoji" onclick="addReaction('${e}')">${e}</div>`).join('');
+  const custom = customEmojis.map(e =>
+    `<div class="p-custom-emoji" title="${esc(e.label)}" onclick="addReaction(':${esc(e.slug)}:')"><img src="${esc(e.image)}" alt="${esc(e.label)}"></div>`).join('');
+  document.getElementById('paletteGrid').innerHTML = standard + custom;
 }
 
 // ── LOAD & RENDER ─────────────────────────────────────────
@@ -388,6 +440,7 @@ async function loadPosts() {
   const params = new URLSearchParams({ limit: '50' });
   if (currentFilter !== 'all') params.set('category', currentFilter);
   if (currentView === 'archive') params.set('archive', 'true');
+  if (currentAccountFilter !== 'all') params.set('account_id', currentAccountFilter);
 
   try {
     const data = await api('GET', 'posts?' + params);
@@ -432,9 +485,13 @@ function renderCard(p) {
 }
 
 function reactionsHtml(p) {
-  return Object.entries(p.reactions || {}).map(([emoji, count]) =>
-    `<span class="reaction" onclick="doReact(event,'${p.id}','${esc(emoji)}')">${emoji}<span class="r-count">${count}</span></span>`
-  ).join('');
+  return Object.entries(p.reactions || {}).map(([emoji, count]) => {
+    const isCustom = emoji.startsWith(':') && emoji.endsWith(':');
+    const slug = isCustom ? emoji.slice(1, -1) : null;
+    const ce   = slug ? customEmojis.find(e => e.slug === slug) : null;
+    const disp = ce ? `<img src="${esc(ce.image)}" style="width:16px;height:16px;object-fit:contain" alt="${esc(ce.label)}">` : emoji;
+    return `<span class="reaction" onclick="doReact(event,'${p.id}','${esc(emoji)}')">${disp}<span class="r-count">${count}</span></span>`;
+  }).join('');
 }
 
 // ── MARKDOWN ─────────────────────────────────────────────
@@ -489,6 +546,41 @@ async function doLogout() {
   location.reload();
 }
 
+// ── ACCOUNT SWITCHER ─────────────────────────────────────
+
+function toggleAccDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('accDropdown');
+  if (dd.classList.contains('open')) { dd.classList.remove('open'); return; }
+
+  const allItem = `<div class="acc-drop-item${currentAccountFilter==='all'?' active':''}" onclick="switchAccountFilter('all',event)">
+    <div class="avatar" style="background:var(--muted);font-size:11px">All</div>すべて
+  </div>`;
+  const accItems = INIT.accounts.map(a =>
+    `<div class="acc-drop-item${currentAccountFilter===a.id?' active':''}" onclick="switchAccountFilter('${esc(a.id)}',event)">
+      <div class="avatar" style="background:${esc(a.color||'var(--accent)')}">${esc((a.display_name||a.id)[0])}</div>
+      ${esc(a.display_name||a.id)}
+    </div>`
+  ).join('');
+
+  dd.innerHTML = allItem + accItems;
+  dd.classList.add('open');
+}
+
+function switchAccountFilter(accountId, e) {
+  if (e) e.stopPropagation();
+  currentAccountFilter = accountId;
+  document.getElementById('accDropdown').classList.remove('open');
+  const acc = accountId === 'all' ? null : INIT.accounts.find(a => a.id === accountId);
+  const name = acc ? (acc.display_name || acc.id) : 'すべて';
+  document.getElementById('topbarTitle').textContent = name;
+  loadPosts();
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('accDropdown').classList.remove('open');
+});
+
 // ── REACTIONS ────────────────────────────────────────────
 
 async function doReact(e, postId, emoji) {
@@ -532,6 +624,16 @@ async function addReaction(emoji) {
 function closePalette() { document.getElementById('rPalette').classList.remove('open'); paletteTargetId = null; }
 document.addEventListener('click', closePalette);
 
+// ── PANEL HELPERS ────────────────────────────────────────
+
+function clearPanelActions() {
+  document.getElementById('panelActions').innerHTML = '';
+}
+
+function setPanelActions(html) {
+  document.getElementById('panelActions').innerHTML = html;
+}
+
 // ── PANEL: DETAIL ─────────────────────────────────────────
 
 async function openDetail(postId) {
@@ -539,6 +641,7 @@ async function openDetail(postId) {
   document.getElementById('panelTitle').textContent = '投稿詳細';
   document.getElementById('panelBody').innerHTML = '<div class="empty-state">読み込み中…</div>';
   document.getElementById('rightPanel').classList.add('open');
+  clearPanelActions();
 
   try {
     const [post, evalData] = await Promise.all([
@@ -547,6 +650,10 @@ async function openDetail(postId) {
     ]);
     const idx = posts.findIndex(p => p.id === postId);
     if (idx >= 0) posts[idx] = post;
+    setPanelActions(`
+      <button class="icon-btn" title="編集" onclick="openEdit('${post.id}')">✏️</button>
+      <button class="icon-btn danger" title="削除" onclick="deletePost('${post.id}')">🗑</button>
+    `);
     renderDetail(post, evalData);
   } catch(err) {
     document.getElementById('panelBody').innerHTML = `<div class="empty-state">${esc(err.message)}</div>`;
@@ -558,6 +665,7 @@ function renderDetail(p, evalData) {
   const intentHtml = p.intent ? `<div class="intent-box"><div class="intent-label">補足・意図</div><div class="intent-text">${esc(p.intent)}</div></div>` : '';
   const urlHtml    = p.url ? `<a class="d-url" href="${esc(p.url)}" target="_blank">🔗 ${esc(p.url)}</a>` : '';
   const cats       = (p.categories || []).map(c => `<span class="cat-tag">${esc(c)}</span>`).join('');
+  const archiveHtml = p.archive_at ? `<div style="font-size:11px;color:var(--muted);margin-top:8px">📦 アーカイブ期限: ${p.archive_at.slice(0,16).replace('T',' ')}</div>` : '';
 
   document.getElementById('panelBody').innerHTML = `
     <div class="detail-head">
@@ -566,7 +674,7 @@ function renderDetail(p, evalData) {
     </div>
     ${p.title ? `<div class="d-title">${esc(p.title)}</div>` : ''}
     <div class="d-body">${mdToHtml(p.body)}</div>
-    ${intentHtml}${urlHtml}
+    ${intentHtml}${urlHtml}${archiveHtml}
     <hr class="divider">
     <div id="detailReactions" class="reactions-row" style="margin-bottom:14px">
       ${reactionsHtml(p)}<button class="palette-btn" onclick="openPalette(event,'${p.id}')">＋</button>
@@ -589,6 +697,119 @@ async function refreshPost(postId) {
   if (idx >= 0) posts[idx] = post;
   renderGrid();
   if (activeId === postId) renderDetail(post, evalData);
+}
+
+// ── PANEL: EDIT ──────────────────────────────────────────
+
+async function openEdit(postId) {
+  document.getElementById('panelTitle').textContent = '投稿を編集';
+  document.getElementById('panelBody').innerHTML = '<div class="empty-state">読み込み中…</div>';
+  clearPanelActions();
+
+  const post = await api('GET', `posts/${postId}`);
+  selectedCats = [...(post.categories || [])];
+
+  const catToggles = INIT.categories.map(c => {
+    const sel = selectedCats.includes(c);
+    return `<span class="cat-toggle${sel?' selected':''}" onclick="toggleCatEdit(this,'${esc(c)}')">${esc(c)}</span>`;
+  }).join('');
+
+  const archiveVal = post.archive_at ? post.archive_at.slice(0,16) : '';
+
+  document.getElementById('panelBody').innerHTML = `
+    <div class="create-form">
+      <div class="form-group"><label class="form-label">タイトル（任意）</label>
+        <input class="form-input" id="ef-title" type="text" value="${esc(post.title||'')}"></div>
+      <div class="form-group"><label class="form-label">本文</label>
+        <textarea class="form-textarea" id="ef-body">${esc(post.body||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">補足・意図（任意）</label>
+        <textarea class="form-textarea" id="ef-intent" style="min-height:72px">${esc(post.intent||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">参考URL（任意）</label>
+        <input class="form-input" id="ef-url" type="url" value="${esc(post.url||'')}"></div>
+      <div class="form-group">
+        <label class="form-label">カテゴリ</label>
+        <div class="cat-toggles" id="efCatToggles">${catToggles}</div>
+        <div class="cat-add-row">
+          <input class="form-input" id="ef-newcat" type="text" placeholder="新しいカテゴリ...">
+          <button class="cat-add-btn" onclick="addCatToEdit()">追加</button>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">アーカイブ期限（任意）</label>
+        <div class="archive-row">
+          <input class="form-input" id="ef-archive" type="datetime-local" value="${esc(archiveVal)}">
+          <button class="cat-add-btn" onclick="setArchiveWeek('ef-archive')">1週間後</button>
+          <button class="cat-add-btn" onclick="document.getElementById('ef-archive').value=''">クリア</button>
+        </div>
+      </div>
+      <button class="form-submit" id="efSubmit" onclick="submitEdit('${postId}')">保存する</button>
+    </div>`;
+  document.getElementById('rightPanel').classList.add('open');
+}
+
+function toggleCatEdit(el, cat) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) selectedCats.push(cat);
+  else selectedCats = selectedCats.filter(c => c !== cat);
+}
+
+function addCatToEdit() {
+  const inp = document.getElementById('ef-newcat'), val = inp.value.trim();
+  if (!val) return;
+  const el = document.createElement('span');
+  el.className = 'cat-toggle selected'; el.textContent = val;
+  el.onclick = () => toggleCatEdit(el, val);
+  selectedCats.push(val);
+  document.getElementById('efCatToggles').appendChild(el); inp.value = '';
+}
+
+async function submitEdit(postId) {
+  const body = document.getElementById('ef-body').value.trim();
+  if (!body) { alert('本文を入力してください'); return; }
+  const btn = document.getElementById('efSubmit');
+  btn.disabled = true; btn.textContent = '保存中…';
+
+  const archiveVal = document.getElementById('ef-archive').value;
+
+  try {
+    await api('PUT', `posts/${postId}`, {
+      title:      document.getElementById('ef-title').value.trim(),
+      body,
+      intent:     document.getElementById('ef-intent').value.trim(),
+      url:        document.getElementById('ef-url').value.trim(),
+      archive_at: archiveVal ? archiveVal + ':00' : null,
+    });
+    // カテゴリは別途 PUT で更新（既存APIはcategoriesをPUTに含まないため直接JSONを更新）
+    await api('PUT', `posts/${postId}`, { categories: selectedCats });
+    activeId = postId;
+    await refreshPost(postId);
+    document.getElementById('panelTitle').textContent = '投稿詳細';
+    setPanelActions(`
+      <button class="icon-btn" title="編集" onclick="openEdit('${postId}')">✏️</button>
+      <button class="icon-btn danger" title="削除" onclick="deletePost('${postId}')">🗑</button>
+    `);
+  } catch(err) {
+    alert(err.message);
+    btn.disabled = false; btn.textContent = '保存する';
+  }
+}
+
+async function deletePost(postId) {
+  if (!confirm('この投稿を削除しますか？この操作は元に戻せません。')) return;
+  try {
+    await api('DELETE', `posts/${postId}`);
+    posts = posts.filter(p => p.id !== postId);
+    closePanel();
+    renderGrid();
+  } catch(err) { alert(err.message); }
+}
+
+// ── ARCHIVE DATE HELPER ───────────────────────────────────
+
+function setArchiveWeek(inputId) {
+  const d = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById(inputId).value =
+    `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 // ── LABELS ───────────────────────────────────────────────
@@ -689,6 +910,44 @@ async function removeComment(postId, idx) {
 
 // ── EVAL ─────────────────────────────────────────────────
 
+function radarChart(axes) {
+  if (!axes || axes.length === 0) return '';
+  const W = 240, H = 240, cx = 120, cy = 120, R = 80;
+  const N = axes.length;
+
+  const pt = (score, i) => {
+    const a = (2 * Math.PI * i / N) - Math.PI / 2;
+    return { x: cx + R * score / 100 * Math.cos(a), y: cy + R * score / 100 * Math.sin(a) };
+  };
+
+  const gridRings = [20,40,60,80,100].map(r => {
+    const pts = Array.from({length:N}, (_,i) => { const p=pt(r,i); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(' ');
+    return `<polygon points="${pts}" fill="none" stroke="var(--border)" stroke-width="1"/>`;
+  }).join('');
+
+  const axisLines = Array.from({length:N}, (_,i) => {
+    const p = pt(100, i);
+    return `<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`;
+  }).join('');
+
+  const dataPts = axes.map((_,i) => { const p=pt(axes[i].score,i); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(' ');
+
+  const labels = axes.map((ax,i) => {
+    const a   = (2*Math.PI*i/N) - Math.PI/2;
+    const lx  = (cx + (R+26)*Math.cos(a)).toFixed(1);
+    const ly  = (cy + (R+26)*Math.sin(a)).toFixed(1);
+    return `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="var(--muted)">${esc(ax.label)}</text>`;
+  }).join('');
+
+  return `<div class="eval-radar">
+    <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible;display:block;margin:0 auto">
+      ${gridRings}${axisLines}
+      <polygon points="${dataPts}" fill="rgba(107,92,231,0.18)" stroke="var(--accent)" stroke-width="2"/>
+      ${labels}
+    </svg>
+  </div>`;
+}
+
 function evalHtml(evalData) {
   if (!evalData || !evalData.evaluation) {
     return `<div class="eval-head">Claude 評価</div><div class="eval-none">未評価です</div>`;
@@ -701,6 +960,7 @@ function evalHtml(evalData) {
     </div>`).join('');
   return `<div class="eval-head">Claude 評価</div>
     <div class="eval-comment">${esc(ev.comment)}</div>
+    ${radarChart(ev.axes)}
     <div class="eval-axes">${axes}</div>`;
 }
 
@@ -709,6 +969,7 @@ function evalHtml(evalData) {
 function openCreate() {
   activeId = null; selectedCats = []; renderGrid();
   document.getElementById('panelTitle').textContent = '新規投稿';
+  clearPanelActions();
 
   const accOpts    = INIT.accounts.map(a =>
     `<option value="${esc(a.id)}"${a.id===INIT.account.id?' selected':''}>${esc(a.display_name)}</option>`).join('');
@@ -730,6 +991,12 @@ function openCreate() {
         </div>
       </div>
       <div class="form-group"><label class="form-label">アカウント</label><select class="form-select" id="cf-account">${accOpts}</select></div>
+      <div class="form-group"><label class="form-label">アーカイブ期限（任意）</label>
+        <div class="archive-row">
+          <input class="form-input" id="cf-archive" type="datetime-local">
+          <button class="cat-add-btn" onclick="setArchiveWeek('cf-archive')">1週間後</button>
+        </div>
+      </div>
       <button class="form-submit" id="cfSubmit" onclick="submitCreate()">投稿する</button>
     </div>`;
   document.getElementById('rightPanel').classList.add('open');
@@ -756,6 +1023,7 @@ async function submitCreate() {
   if (!body) { alert('本文を入力してください'); return; }
   const btn = document.getElementById('cfSubmit');
   btn.disabled = true; btn.textContent = '投稿中…';
+  const archiveVal = document.getElementById('cf-archive').value;
   try {
     await api('POST', 'posts', {
       account_id: document.getElementById('cf-account').value,
@@ -764,6 +1032,7 @@ async function submitCreate() {
       intent:     document.getElementById('cf-intent').value.trim(),
       url:        document.getElementById('cf-url').value.trim(),
       categories: selectedCats,
+      archive_at: archiveVal ? archiveVal + ':00' : null,
     });
     closePanel(); await loadPosts();
   } catch(err) {
@@ -772,11 +1041,68 @@ async function submitCreate() {
   }
 }
 
+// ── PANEL: ACCOUNT EDIT ───────────────────────────────────
+
+function openAccountEdit() {
+  activeId = null; renderGrid();
+  document.getElementById('panelTitle').textContent = 'アカウント設定';
+  clearPanelActions();
+
+  const acc = INIT.account;
+  const shapeOpts = ['circle','square','none'].map(s =>
+    `<option value="${s}"${s===(acc.icon_shape||'circle')?' selected':''}>${{circle:'丸',square:'四角',none:'なし'}[s]}</option>`
+  ).join('');
+
+  document.getElementById('panelBody').innerHTML = `
+    <div class="create-form">
+      <div class="form-group">
+        <label class="form-label">表示名</label>
+        <input class="form-input" id="ae-name" type="text" value="${esc(acc.display_name||'')}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">アイコン形状</label>
+        <select class="form-select" id="ae-shape">${shapeOpts}</select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">アクセントカラー</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" id="ae-color" type="text" placeholder="#6b5ce7" value="${esc(acc.color||'#6b5ce7')}" oninput="document.getElementById('ae-colorprev').style.background=this.value" style="flex:1">
+          <div class="color-preview" id="ae-colorprev" style="background:${esc(acc.color||'#6b5ce7')}"></div>
+          <input type="color" value="${esc(acc.color||'#6b5ce7')}" oninput="document.getElementById('ae-color').value=this.value;document.getElementById('ae-colorprev').style.background=this.value" style="width:36px;height:36px;border:none;background:none;cursor:pointer;padding:0">
+        </div>
+      </div>
+      <button class="form-submit" id="aeSubmit" onclick="submitAccountEdit()">保存する</button>
+    </div>`;
+  document.getElementById('rightPanel').classList.add('open');
+}
+
+async function submitAccountEdit() {
+  const btn = document.getElementById('aeSubmit');
+  btn.disabled = true; btn.textContent = '保存中…';
+  try {
+    const updated = await api('PUT', `accounts/${INIT.account.id}`, {
+      display_name: document.getElementById('ae-name').value.trim(),
+      color:        document.getElementById('ae-color').value.trim(),
+      icon_shape:   document.getElementById('ae-shape').value,
+    });
+    INIT.account = updated;
+    // サイドバーを更新
+    document.getElementById('sbAvatar').style.background = updated.color || 'var(--accent)';
+    document.getElementById('sbAvatar').textContent = (updated.display_name || updated.id)[0];
+    document.getElementById('sbAccName').textContent = updated.display_name || updated.id;
+    closePanel();
+  } catch(err) {
+    alert(err.message);
+    btn.disabled = false; btn.textContent = '保存する';
+  }
+}
+
 // ── PANEL: MGMT ──────────────────────────────────────────
 
 function openCatMgmt() {
   activeId = null; renderGrid();
   document.getElementById('panelTitle').textContent = 'カテゴリ管理';
+  clearPanelActions();
   const counts = {};
   posts.forEach(p => (p.categories || []).forEach(c => counts[c] = (counts[c] || 0) + 1));
   const rows = INIT.categories.map(c =>
@@ -789,23 +1115,87 @@ function openCatMgmt() {
 function openReactMgmt() {
   activeId = null; renderGrid();
   document.getElementById('panelTitle').textContent = 'リアクション管理';
+  clearPanelActions();
   const used = [...new Set(posts.flatMap(p => Object.keys(p.reactions || {})))];
   const rows = used.map(e =>
     `<div class="mgmt-row"><div class="mgmt-row-left"><span style="font-size:20px">${e}</span></div></div>`
   ).join('');
+
+  const customRows = customEmojis.map(e =>
+    `<div class="mgmt-row">
+      <div class="mgmt-row-left">
+        <img src="${esc(e.image)}" class="emoji-preview" alt="${esc(e.label)}">
+        <span>:${esc(e.slug)}: <span class="mgmt-count">${esc(e.label)}</span></span>
+      </div>
+      <button class="icon-btn danger" onclick="deleteCustomEmoji('${esc(e.slug)}')">🗑</button>
+    </div>`
+  ).join('');
+
   document.getElementById('panelBody').innerHTML = `
     <div class="mgmt-section"><div class="mgmt-title">使用中のリアクション</div>${rows || '<div class="eval-none">まだありません</div>'}</div>
+    <div class="mgmt-section"><div class="mgmt-title">カスタム絵文字</div>${customRows || '<div class="eval-none" style="margin-bottom:12px">登録なし</div>'}</div>
     <div class="mgmt-section">
       <div class="mgmt-title">カスタム絵文字を追加</div>
-      <div class="emoji-upload-box"><span>🖼</span>画像をドロップ（PNG / GIF）<br><span style="font-size:11px">横長・GIF可</span></div>
-      <div class="form-group"><label class="form-label">スラッグ</label><input class="form-input" type="text" placeholder=":emoji-name:"></div>
-      <button class="form-submit" style="margin-top:8px">登録する</button>
+      <label class="emoji-upload-box" id="emojiDropBox">
+        <input type="file" id="emojiFileInput" accept="image/png,image/gif,image/jpeg,image/webp" onchange="onEmojiFileSelect(this)">
+        <span id="emojiPreviewWrap">🖼</span>
+        <span id="emojiDropLabel">画像をクリックして選択（PNG / GIF / JPEG）</span>
+      </label>
+      <div class="form-group"><label class="form-label">スラッグ（英数字・_ - のみ）</label>
+        <input class="form-input" id="emojiSlug" type="text" placeholder="moti_power"></div>
+      <div class="form-group"><label class="form-label">ラベル（任意）</label>
+        <input class="form-input" id="emojiLabel" type="text" placeholder="もちパワー"></div>
+      <button class="form-submit" id="emojiSubmit" onclick="submitEmoji()" style="margin-top:4px">登録する</button>
     </div>`;
   document.getElementById('rightPanel').classList.add('open');
 }
 
+function onEmojiFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  document.getElementById('emojiPreviewWrap').innerHTML = `<img src="${url}" class="emoji-preview" style="margin-bottom:6px">`;
+  document.getElementById('emojiDropLabel').textContent = file.name;
+  const base = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9_-]/g,'_');
+  if (!document.getElementById('emojiSlug').value) document.getElementById('emojiSlug').value = base;
+}
+
+async function submitEmoji() {
+  const input = document.getElementById('emojiFileInput');
+  const slug  = document.getElementById('emojiSlug').value.trim();
+  const label = document.getElementById('emojiLabel').value.trim();
+  if (!input.files[0]) { alert('画像を選択してください'); return; }
+  if (!slug) { alert('スラッグを入力してください'); return; }
+  if (!/^[a-z0-9_-]+$/.test(slug)) { alert('スラッグは英小文字・数字・_- のみ使用できます'); return; }
+
+  const btn = document.getElementById('emojiSubmit');
+  btn.disabled = true; btn.textContent = '登録中…';
+  try {
+    const fd = new FormData();
+    fd.append('image', input.files[0]);
+    fd.append('slug',  slug);
+    fd.append('label', label);
+    await apiUpload('reactions', fd);
+    await buildPalette();
+    openReactMgmt();
+  } catch(err) {
+    alert(err.message);
+    btn.disabled = false; btn.textContent = '登録する';
+  }
+}
+
+async function deleteCustomEmoji(slug) {
+  if (!confirm(`:${slug}: を削除しますか？`)) return;
+  try {
+    await api('DELETE', `reactions/${slug}`);
+    await buildPalette();
+    openReactMgmt();
+  } catch(err) { alert(err.message); }
+}
+
 function closePanel() {
   activeId = null;
+  clearPanelActions();
   document.getElementById('rightPanel').classList.remove('open');
   renderGrid();
 }

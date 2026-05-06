@@ -206,7 +206,7 @@ if ($method === 'PUT') {
     auth_check();
 
     $body    = req_json();
-    $allowed = ['title', 'body', 'intent', 'url', 'archive_at'];
+    $allowed = ['title', 'body', 'intent', 'url', 'archive_at', 'categories'];
     foreach ($allowed as $key) {
         if (array_key_exists($key, $body)) {
             $post[$key] = is_string($body[$key]) ? trim($body[$key]) : $body[$key];

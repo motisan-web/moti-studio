@@ -6,6 +6,25 @@
 
 ## 直近で完了したこと
 
+（`change/phase3-ui.md`）
+
+- **投稿編集UI** — 詳細パネルに ✏️/🗑 ボタン、editフォーム、submitEdit
+- **投稿削除UI** — deletePost（確認後 DELETE、グリッドから除去）
+- **アーカイブ期限設定** — 作成・編集フォームに datetime-local + 1週間後ボタン
+- **アカウント切替UI** — サイドバークリックでドロップダウン、タイムラインフィルター
+- **アカウント情報編集** — display_name / color / icon_shape を編集、サイドバー即時更新
+- **レーダーチャート** — SVGで5軸グラフ、evalパネルに表示
+- **リアクション絵文字登録UI** — 画像アップロード（mime検証）+ slug登録、削除も可
+- **api/handlers/reactions.php** 新規作成（GET/POST/DELETE）
+- **PUT posts/{id}** に `categories` を追加
+- **img/reactions/** ディレクトリ作成
+
+（`change/phase1-eval-and-cli.md`）
+
+- **`spec/eval-logic.md`** — 評価軸選定・スコアリング・コメントルールの設計ドキュメント作成
+- **`api/cli/` 全7本実装** — get_uncategorized / get_unevaluated / get_unposted_drafts / get_post / set_categories / write_eval / post_draft
+  - post_draft は投稿済みdraftを `data/drafts/posted/` に自動退避
+
 （`change/initial-implementation.md`）
 
 - **ライトテーマ化**（`index.html`）CSS変数をダーク→ライトに全面変換
@@ -22,13 +41,9 @@
 
 ## 次にやること
 
-残りの主要 todo：
-
-1. **分析JSONのスキーマ設計・実装**（5角形グラフUI）
-2. **リアクション絵文字の登録UI実装**（画像アップロード→`data/reactions.json`登録）
-3. **Xserverデプロイ準備**（パーミッション設定 644/755、.htaccess確認）
-4. **data/ サブモジュール化**（プライベートリポジトリ）
-5. **スマホ対応**（後回し・最終的には作る）
+- Xserver 初回デプロイ実施（FTPでアップロード → パーミッション設定 → 動作確認）
+- data/ サブモジュール化（プライベートリポジトリ作成後に `tools/submodule-setup.sh` 実行）
+- スマホ対応（後回し・最終的には作る）
 
 ---
 
