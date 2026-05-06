@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>moti studio</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-width: 220px;
+      --sidebar-col-width: 56px;
+      --panel-width: 500px;
+      --header-h: 56px;
+      --bg: #f2f2f7;
+      --surface: #ffffff;
+      --surface2: #f0f0f5;
+      --border: #dddde8;
+      --text: #1c1c2e;
+      --muted: #7070a0;
+      --accent: #6b5ce7;
+      --accent2: #7c6aff;
+      --react-active: #ede9ff;
+    }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width: var(--sidebar-width); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width .2s ease; flex-shrink: 0; overflow: hidden; }
+    .sidebar.col { width: var(--sidebar-col-width); }
+    .sb-head { display: flex; align-items: center; justify-content: space-between; padding: 0 14px; height: var(--header-h); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .sidebar.col .sb-head { justify-content: center; }
+    .logo { font-weight: 700; font-size: 15px; color: var(--accent); white-space: nowrap; }
+    .sidebar.col .logo { display: none; }
+    .icon-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 5px; border-radius: 6px; line-height: 1; font-size: 15px; }
+    .icon-btn:hover { color: var(--text); background: var(--surface2); }
+    .sb-account { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    .sidebar.col .sb-account { justify-content: center; padding: 12px 0; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .acc-name { font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .sidebar.col .acc-name { display: none; }
+    .sb-nav { padding: 8px; flex: 1; overflow-y: auto; }
+    .sec-title { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: 12px 10px 4px; white-space: nowrap; }
+    .sidebar.col .sec-title { display: none; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--muted); white-space: nowrap; transition: background .12s, color .12s; }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--react-active); color: var(--accent); }
+    .sidebar.col .nav-item { justify-content: center; padding: 9px 0; }
+    .nav-icon { font-size: 15px; flex-shrink: 0; }
+    .sidebar.col .nav-label { display: none; }
+
+    /* ── MAIN ── */
+    .main-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    .topbar { height: var(--header-h); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: var(--surface); flex-shrink: 0; }
+    .topbar-title { font-size: 14px; font-weight: 600; color: var(--muted); }
+    .post-btn { background: var(--accent); color: #fff; border: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .12s; }
+    .post-btn:hover { background: var(--accent2); }
+    .content-area { flex: 1; display: flex; overflow: hidden; }
+
+    /* ── MASONRY ── */
+    .main-content { flex: 1; overflow-y: auto; padding: 20px; container-type: inline-size; container-name: main; min-width: 0; }
+    .posts-grid { columns: 1; column-gap: 14px; }
+    @container main (min-width: 500px) { .posts-grid { columns: 2; } }
+    @container main (min-width: 780px) { .posts-grid { columns: 3; } }
+
+    /* ── POST CARD ── */
+    .post-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; cursor: pointer; transition: border-color .12s, background .12s; display: flex; flex-direction: column; gap: 10px; break-inside: avoid; margin-bottom: 14px; }
+    .post-card:hover { border-color: var(--accent); background: var(--surface2); }
+    .post-card.active { border-color: var(--accent); }
+    .post-meta { display: flex; align-items: center; justify-content: space-between; }
+    .post-account { display: flex; align-items: center; gap: 6px; }
+    .post-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+    .post-acc-name { font-size: 11px; color: var(--muted); }
+    .post-date { font-size: 11px; color: var(--muted); }
+    .post-title { font-size: 13px; font-weight: 700; line-height: 1.4; }
+    .post-body { font-size: 12px; color: var(--text); }
+    .post-body .md-line, .d-body .md-line { line-height: 1.75; }
+    .post-body .md-li, .d-body .md-li { line-height: 1.75; padding-left: 10px; }
+    .post-body blockquote, .d-body blockquote { border-left: 2px solid var(--accent); padding-left: 8px; color: var(--muted); font-style: italic; margin: 2px 0; }
+    .more-btn { align-self: flex-start; background: none; border: none; color: var(--accent); font-size: 11px; cursor: pointer; padding: 0; }
+    .more-btn:hover { text-decoration: underline; }
+    .post-url { font-size: 11px; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+    .cats { display: flex; flex-wrap: wrap; gap: 4px; }
+    .cat-tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+    /* card label chips */
+    .card-labels { display: flex; flex-wrap: wrap; gap: 4px; }
+    .label-chip { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); display: flex; align-items: center; gap: 3px; }
+
+    .reactions-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+    .reaction { display: flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); font-size: 12px; cursor: pointer; transition: background .12s, border-color .12s; user-select: none; }
+    .reaction.active { background: var(--react-active); border-color: var(--accent); }
+    .reaction:hover { border-color: var(--accent); }
+    .r-count { font-size: 11px; color: var(--muted); }
+    .palette-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px dashed var(--border); background: none; color: var(--muted); font-size: 14px; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .12s, color .12s; }
+    .palette-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── REACTION PALETTE ── */
+    .r-palette { position: fixed; z-index: 200; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: none; box-shadow: 0 8px 32px rgba(0,0,0,.12); }
+    .r-palette.open { display: block; }
+    .palette-label { font-size: 10px; color: var(--muted); margin-bottom: 8px; text-align: center; }
+    .palette-grid { display: grid; grid-template-columns: repeat(5, 36px); gap: 3px; }
+    .p-emoji { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: background .1s; }
+    .p-emoji:hover { background: var(--surface); }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel { width: 0; overflow: hidden; border-left: 1px solid transparent; background: var(--surface); transition: width .22s ease, border-color .22s; display: flex; flex-direction: column; flex-shrink: 0; }
+    .right-panel.open { width: var(--panel-width); border-color: var(--border); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 0 18px; height: var(--header-h); border-bottom: 1px solid var(--border); min-width: var(--panel-width); flex-shrink: 0; }
+    .panel-title { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .panel-body { flex: 1; overflow-y: auto; padding: 22px; min-width: var(--panel-width); }
+
+    /* detail */
+    .detail-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .detail-head .avatar { width: 38px; height: 38px; font-size: 16px; }
+    .d-acc { font-size: 14px; font-weight: 600; }
+    .d-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .d-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; line-height: 1.4; }
+    .d-body { font-size: 13px; color: var(--text); }
+    .d-body .md-li { padding-left: 14px; }
+    .d-body blockquote { border-left: 3px solid var(--accent); padding-left: 12px; margin: 6px 0; }
+
+    .intent-box { margin-top: 16px; padding: 12px 14px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--muted); }
+    .intent-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+    .intent-text { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+    .d-url { display: block; margin-top: 12px; font-size: 12px; color: var(--accent); text-decoration: none; word-break: break-all; }
+    .d-url:hover { text-decoration: underline; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* labels in detail */
+    .labels-section { margin-bottom: 4px; }
+    .labels-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
+    .label-row { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
+    .label-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .label-info { flex: 1; min-width: 0; }
+    .label-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .label-url { font-size: 11px; color: var(--accent); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+    .label-url:hover { text-decoration: underline; }
+    .label-memo { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+    .label-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 2px 4px; border-radius: 4px; flex-shrink: 0; }
+    .label-del:hover { color: #ff6b6b; }
+
+    .add-label-btn { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px dashed var(--border); border-radius: 8px; background: none; color: var(--muted); font-size: 12px; cursor: pointer; width: 100%; transition: border-color .12s, color .12s; }
+    .add-label-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    .label-form { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+    .label-form-row { display: flex; gap: 6px; }
+    .label-form .form-submit-sm { padding: 7px 14px; border-radius: 7px; background: var(--accent); border: none; color: #fff; font-size: 12px; cursor: pointer; }
+    .label-form .cancel-btn { padding: 7px 14px; border-radius: 7px; border: 1px solid var(--border); background: none; color: var(--muted); font-size: 12px; cursor: pointer; }
+
+    /* evaluation */
+    .eval-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 14px; }
+    .eval-comment { font-size: 13px; line-height: 1.75; color: var(--text); margin-bottom: 18px; padding: 12px 14px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--accent); }
+    .eval-axes { display: flex; flex-direction: column; gap: 11px; }
+    .eval-row-head { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .eval-axis-label { font-size: 12px; color: var(--text); }
+    .eval-score { font-size: 12px; color: var(--accent); font-weight: 600; }
+    .eval-bar-bg { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .eval-bar { height: 100%; background: var(--accent); border-radius: 2px; }
+
+    /* create / mgmt forms */
+    .create-form { display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+    .form-input, .form-textarea, .form-select { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color .12s; width: 100%; }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+    .form-textarea { resize: vertical; min-height: 120px; line-height: 1.65; }
+    .form-select option { background: var(--surface2); }
+    .cat-toggles { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+    .cat-toggle { font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; transition: all .12s; }
+    .cat-toggle.selected { background: var(--react-active); border-color: var(--accent); color: var(--accent); }
+    .cat-toggle:hover { border-color: var(--accent); }
+    .cat-add-row { display: flex; gap: 6px; }
+    .cat-add-btn { flex-shrink: 0; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 12px; cursor: pointer; transition: border-color .12s, color .12s; }
+    .cat-add-btn:hover { border-color: var(--accent); color: var(--text); }
+    .form-submit { background: var(--accent); color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .12s; }
+    .form-submit:hover { background: var(--accent2); }
+
+    .mgmt-section { margin-bottom: 28px; }
+    .mgmt-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+    .mgmt-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); margin-bottom: 6px; font-size: 13px; }
+    .mgmt-row-left { display: flex; align-items: center; gap: 8px; }
+    .mgmt-count { font-size: 11px; color: var(--muted); }
+    .mgmt-actions { display: flex; gap: 6px; }
+    .mgmt-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 11px; padding: 3px 8px; cursor: pointer; transition: border-color .12s, color .12s; }
+    .mgmt-btn:hover { border-color: var(--accent); color: var(--text); }
+    .mgmt-btn.danger:hover { border-color: #ff6b6b; color: #ff6b6b; }
+    .emoji-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 24px; text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+    .emoji-upload-box span { font-size: 24px; display: block; margin-bottom: 6px; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <span class="logo">moti studio</span>
+    <button class="icon-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
+  </div>
+  <div class="sb-account">
+    <div class="avatar">m</div>
+    <span class="acc-name">moti</span>
+  </div>
+  <nav class="sb-nav">
+    <div class="sec-title">メニュー</div>
+    <div class="nav-item active" onclick="navTimeline(this)"><span class="nav-icon">📋</span><span class="nav-label">タイムライン</span></div>
+    <div class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">検索</span></div>
+    <div class="nav-item"><span class="nav-icon">📦</span><span class="nav-label">アーカイブ</span></div>
+    <div class="sec-title">カテゴリ</div>
+    <div class="nav-item active" onclick="filterCat(this,'all')"><span class="nav-icon">🌐</span><span class="nav-label">すべて</span></div>
+    <div class="nav-item" onclick="filterCat(this,'認知・行動')"><span class="nav-icon">🧠</span><span class="nav-label">認知・行動</span></div>
+    <div class="nav-item" onclick="filterCat(this,'思想')"><span class="nav-icon">💭</span><span class="nav-label">思想</span></div>
+    <div class="nav-item" onclick="filterCat(this,'健康')"><span class="nav-icon">🌿</span><span class="nav-label">健康</span></div>
+    <div class="nav-item" onclick="filterCat(this,'引用')"><span class="nav-icon">💬</span><span class="nav-label">引用</span></div>
+    <div class="nav-item" onclick="filterCat(this,'言語')"><span class="nav-icon">🗣</span><span class="nav-label">言語</span></div>
+    <div class="nav-item" onclick="filterCat(this,'体験')"><span class="nav-icon">🫧</span><span class="nav-label">体験</span></div>
+    <div class="nav-item" onclick="filterCat(this,'人間関係')"><span class="nav-icon">🤝</span><span class="nav-label">人間関係</span></div>
+    <div class="nav-item" onclick="filterCat(this,'お役立ち')"><span class="nav-icon">💁</span><span class="nav-label">お役立ち</span></div>
+    <div class="nav-item" onclick="filterCat(this,'もちさん㊙情報')"><span class="nav-icon">🤫</span><span class="nav-label">もちさん㊙情報</span></div>
+    <div class="sec-title">管理</div>
+    <div class="nav-item" onclick="openCatMgmt()"><span class="nav-icon">🏷</span><span class="nav-label">カテゴリ管理</span></div>
+    <div class="nav-item" onclick="openReactMgmt()"><span class="nav-icon">😀</span><span class="nav-label">リアクション管理</span></div>
+  </nav>
+</aside>
+
+<div class="main-wrap">
+  <div class="topbar">
+    <span class="topbar-title" id="topbarTitle">タイムライン</span>
+    <button class="post-btn" onclick="openCreate()">＋ 投稿する</button>
+  </div>
+  <div class="content-area">
+    <main class="main-content">
+      <div class="posts-grid" id="postsGrid"></div>
+    </main>
+    <aside class="right-panel" id="rightPanel">
+      <div class="panel-head">
+        <span class="panel-title" id="panelTitle">投稿詳細</span>
+        <button class="icon-btn" onclick="closePanel()">✕</button>
+      </div>
+      <div class="panel-body" id="panelBody"></div>
+    </aside>
+  </div>
+</div>
+
+<div class="r-palette" id="rPalette">
+  <div class="palette-label">リアクションを追加</div>
+  <div class="palette-grid" id="paletteGrid"></div>
+</div>
+
+<script>
+  const PALETTE_EMOJIS = ['💡','✨','🔥','👀','🤔','💭','🎯','🌟','💪','😂','❤️','🙏','👏','🤯','💯','🦋','🌊','🎵','🍀','⚡'];
+
+  const LABEL_TYPES = [
+    { key:'misskey',     label:'Misskey投稿済み', icon:'🦋' },
+    { key:'twitter',     label:'Twitter投稿済み', icon:'🐦' },
+    { key:'resolved',    label:'解決済み',         icon:'✅' },
+    { key:'implemented', label:'実装済み',         icon:'🔧' },
+    { key:'cancelled',   label:'キャンセル',       icon:'❌' },
+    { key:'verified',    label:'検証済み',         icon:'🔬' },
+  ];
+
+  const ALL_CATS = ['認知・行動','思想','健康','引用','言語','体験','人間関係','お役立ち','もちさん㊙情報'];
+
+  const posts = [
+    { id:1, account:'moti', date:'2026-05-04', title:'',
+      body:`歯ブラシの近くに\n見えるところに\n「歯磨きはできるだけ丁寧にすること\n食べ終わってから磨くまでの時間の短さを\n意識しなさい」\nみたいなことを書いておくことで\nすごく歯磨きを大事にしてしまうみたいな\n認知テクニックだらけの家に住みたいと\n思います！`,
+      intent:null, categories:['認知・行動'], url:null,
+      reactions:[{e:'💡',n:3,a:true},{e:'✨',n:2,a:false},{e:'🔥',n:1,a:false}],
+      labels:[{type:'misskey',url:'https://misskey.io/notes/abc123',memo:'2026-05-04 motiアカウントで投稿'}],
+      eval:{ comment:'環境設計で行動を誘導するという視点が鮮明です。「書いておくだけで丁寧になる」という仕掛けへの気づきは、自己の認知バグを逆用する設計思想として完成度が高い。',
+        axes:[{l:'行動性',s:88},{l:'創造性',s:76},{l:'具体性',s:72},{l:'内省度',s:65},{l:'ユーモア',s:58}] }
+    },
+    { id:2, account:'moti', date:'2026-05-03', title:'',
+      body:`現在の責任は、結果について発生している`,
+      intent:null, categories:['思想'], url:null,
+      reactions:[{e:'🤔',n:5,a:false},{e:'💡',n:2,a:true}],
+      labels:[],
+      eval:{ comment:'一文に圧縮された論理は切れ味があります。「過去」や「行為」ではなく「結果」に責任を紐づける因果論的倫理観は、行動設計の出発点として機能しうる射程を持っています。',
+        axes:[{l:'思考深度',s:91},{l:'明瞭性',s:84},{l:'独自性',s:78},{l:'批評性',s:70},{l:'内省度',s:65}] }
+    },
+    { id:3, account:'moti', date:'2026-05-02', title:'フィトケミカル',
+      body:`フィトケミカル、とったらいいけど取らなくてもいい物質、取り入れていきたい`,
+      intent:null, categories:['健康'], url:'https://ja.wikipedia.org/wiki/フィトケミカル',
+      reactions:[{e:'👀',n:4,a:false},{e:'✨',n:1,a:true}],
+      labels:[],
+      eval:{ comment:'「取らなくてもいいがとりたい」という動機の正直さが好印象です。過剰でも義務でもない、ゆるい健康行動の優先度設計として機能しています。',
+        axes:[{l:'具体性',s:80},{l:'行動性',s:75},{l:'専門性',s:72},{l:'好奇心',s:68},{l:'時事性',s:55}] }
+    },
+    { id:4, account:'moti', date:'2026-05-01', title:'',
+      body:`さのみっちさん曰く\n> そのときの自分ができることを最大限やれているならそれは「努力している」とされています`,
+      intent:null, categories:['引用'], url:null,
+      reactions:[{e:'✨',n:3,a:true},{e:'🔥',n:2,a:false},{e:'🤔',n:1,a:false}],
+      labels:[],
+      eval:{ comment:'引用が単なる転載でなく、内省の入口として機能しています。外部の定義を取り込みながら自己評価の基準を再構築しようとする姿勢が、次の投稿（努力の定義）への布石になっています。',
+        axes:[{l:'内省度',s:85},{l:'素直さ',s:82},{l:'思考深度',s:78},{l:'明瞭性',s:74},{l:'共感性',s:71}] }
+    },
+    { id:5, account:'moti', date:'2026-04-30', title:'',
+      body:`周りの人たちは短い文章を羅列して投稿するのに\nもちさんは長文ばっかり投稿するのは\n何故か？みたいなものを研究して\n思考形態の違いを探ってみませんか？`,
+      intent:`misskeyでかなり短文にコミュニケーションをとる人は見かけるけども、もちさんみたいに長文ばっかり垂れ流して思考の整理をしている人を見かけなくてなんとなく思ったこと、そんなにやろうとも思っていない`,
+      categories:['思想','認知・行動'], url:null,
+      reactions:[{e:'🤔',n:4,a:false},{e:'💭',n:3,a:true}],
+      labels:[],
+      eval:{ comment:'自分の思考スタイルを他者との差異から浮き彫りにする観察眼が鋭い。「やろうとも思っていない」という留保が、観察者としての適切な距離を保っており、過剰な自己分析に陥っていません。',
+        axes:[{l:'内省度',s:83},{l:'好奇心',s:79},{l:'思考深度',s:76},{l:'社会接続性',s:72},{l:'独自性',s:68}] }
+    },
+    { id:6, account:'moti', date:'2026-04-29', title:'',
+      body:`もちさんの「努力」の定義には暗黙的に持続的な苦しみが含まれていますね！\n- 一瞬の最大火力 → 苦しみがない → 努力でない\n- やりたいことを長時間やる → 苦しみがない → 努力でない\n- やりたくないことを継続する → 苦しみがある → 努力\n苦しみの持続時間と強度が努力の判定基準になっている気がします！\nただそのせいで、本来寝るべきなのに粘って作業するのを努力のような気がしてしまい、無理に続けてしまう悪癖があります！`,
+      intent:`もちさんが頑張っている、努力しているという評価を受けた時に、認知的にはしていないつもりなので努力要件を調べてみた時の話です`,
+      categories:['思想','認知・行動'], url:null,
+      reactions:[{e:'💡',n:6,a:true},{e:'🤯',n:3,a:false},{e:'✨',n:2,a:false}],
+      labels:[{type:'verified',url:'',memo:'自己分析として検証済み、認知行動療法文脈でも有効'}],
+      eval:{ comment:'自己概念の解体と再構築が、箇条書きによって驚くほど明快に整理されています。「苦しみ＝努力」フレームが睡眠削りを正当化しているという気づきは、認知行動療法的な自己介入として即座に使えるレベルの洞察です。',
+        axes:[{l:'内省度',s:92},{l:'思考深度',s:88},{l:'素直さ',s:85},{l:'明瞭性',s:79},{l:'行動性',s:71}] }
+    },
+    { id:7, account:'moti', date:'2026-04-28', title:'',
+      body:`言語学的に最強の雑談トピックは天気の話らしい`,
+      intent:`ゆる言語学ラジオ、水野さんの主張`,
+      categories:['引用','言語'], url:null,
+      reactions:[{e:'👀',n:5,a:false},{e:'💡',n:2,a:true}],
+      labels:[],
+      eval:{ comment:'短文ながら、社会言語学への入口として十分な引力があります。天気が「ファティック・コミュニケーション」として機能しているという視点は、日常会話の設計に応用できます。',
+        axes:[{l:'社会接続性',s:81},{l:'専門性',s:74},{l:'具体性',s:70},{l:'ユーモア',s:66},{l:'時事性',s:62}] }
+    },
+    { id:8, account:'moti', date:'2026-04-27', title:'',
+      body:`ワクワクをお茶に求めてないものの\nワクワクするものであると言う話で飲んでいるので\n上がった期待が体験を悪くしています！`,
+      intent:`ONICHAを飲んだ時の感想、公民館のでかいポッドに、麦茶のパックを一つだけ入れた時の味がした`,
+      categories:['体験','健康'], url:null,
+      reactions:[{e:'😂',n:4,a:true},{e:'✨',n:2,a:false},{e:'🌿',n:1,a:false}],
+      labels:[],
+      eval:{ comment:'「公民館のでかいポッドに麦茶パック一つ」という具体的な比喩が、期待値管理という抽象的な教訓を鮮明にしています。予期せぬ体験を即座に認知的フレームに落とし込む速度が印象的です。',
+        axes:[{l:'具体性',s:86},{l:'感情強度',s:83},{l:'ユーモア',s:77},{l:'素直さ',s:72},{l:'創造性',s:68}] }
+    },
+    { id:9, account:'moti', date:'2026-04-26', title:'',
+      body:`もちさんの人間関係の設計は\n深さより質、数より相性\nなので、こうなっています！\n(* 'ᵕ' )ｲｲﾖｯ!(* 'ᵕ' )ｲｲﾖｯ!(* 'ᵕ' )ｲｲﾖｯ!\nいい人だとしても\nキャリブレーションコストが高そうだとお断りします！`,
+      intent:`好意的でも、害があると判断すれば距離をとります！常に敬語なのは距離感が近すぎないようになるという利点もあります！`,
+      categories:['思想','人間関係'], url:null,
+      reactions:[{e:'✨',n:5,a:true},{e:'💡',n:3,a:false},{e:'🎯',n:2,a:false}],
+      labels:[],
+      eval:{ comment:'人間関係にコスト概念を持ち込む設計思想が明快です。「好意的でも有害なら距離を置く」という判断基準の明文化は、感情ではなく原則に基づく関係設計の証明。敬語を距離調整ツールとして意図的に使用している点も、言語と人間関係設計の交点として興味深い。',
+        axes:[{l:'独自性',s:87},{l:'明瞭性',s:83},{l:'内省度',s:79},{l:'行動性',s:76},{l:'批評性',s:71}] }
+    },
+    { id:10, account:'moti', date:'2026-04-25', title:'',
+      body:`服とタオルは、乾きやすく、毛玉ができないが最優先、次に値段\nその基準で選ぶことで余計なリソースをとらずに済みます。`,
+      intent:`こだわりがないわけではなく、機能的で情報量が少ないのがいいというこだわりがあるということですよ、デザインはシンプルなのがいいですね！`,
+      categories:['認知・行動'], url:null,
+      reactions:[{e:'💡',n:4,a:false},{e:'👀',n:2,a:true}],
+      labels:[],
+      eval:{ comment:'消費行動の最適化軸を「機能」と「情報量の少なさ」に絞り込む思想が一貫しています。これは節約ではなく、認知的コストの意図的削減戦略です。「こだわりがないのではなく、シンプルへのこだわりがある」という逆転表現が、思想の解像度を示しています。',
+        axes:[{l:'行動性',s:84},{l:'明瞭性',s:81},{l:'具体性',s:78},{l:'独自性',s:72},{l:'内省度',s:68}] }
+    },
+    { id:12, account:'moti', date:'2026-04-24', title:'',
+      body:`もちさんはとてもやわらかい`,
+      intent:null, categories:['もちさん㊙情報'], url:null,
+      reactions:[{e:'✨',n:7,a:true},{e:'❤️',n:4,a:false}],
+      labels:[],
+      eval:{ comment:'最短で最大の情報密度を持つ投稿です。「やわらかい」という形容が、物理的・精神的・対人的の三層で同時に成立しています。これほど多義的な自己表現は珍しい。',
+        axes:[{l:'素直さ',s:95},{l:'感情強度',s:82},{l:'ユーモア',s:78},{l:'独自性',s:74},{l:'創造性',s:70}] }
+    },
+    { id:13, account:'moti', date:'2026-04-23', title:'',
+      body:`もちさんは\n元気の無い人を見掛けると\nもちパワーって名前の\n得体の知れ無い何かを配っているのですが\n調査の結果、もちパワーはメンタルが強くなり、幸せな気分になれるホルモンの1種だそうです！\n依存性があるそうです！\n覚えておいてください！\n(* 'ᵕ' )ｲｲﾖｯ!(* 'ᵕ' )ｲｲﾖｯ!`,
+      intent:`もちパワーはg単位でもちさんがためている物質である`,
+      categories:['もちさん㊙情報'], url:null,
+      reactions:[{e:'😂',n:6,a:true},{e:'❤️',n:5,a:false},{e:'✨',n:3,a:false}],
+      labels:[],
+      eval:{ comment:'もちパワーを科学的物質として定義するユーモアと、「依存性」「ホルモン」という擬似学術的フレームの組み合わせが巧みです。自己神話化の一種として機能しており、もちさんのキャラクター定義として説得力があります。',
+        axes:[{l:'ユーモア',s:93},{l:'創造性',s:88},{l:'感情強度',s:82},{l:'独自性',s:79},{l:'社会接続性',s:75}] }
+    },
+    { id:14, account:'moti', date:'2026-04-22', title:'',
+      body:`なのでもちが上手くいった分は\nそのうちもちパワーとして\n皆さんに還元されていくかもしれません！\nうおおおおおおおおおおおお！\n𝑩𝑰𝑮𝑳𝑶𝑽𝑬──────────`,
+      intent:null, categories:['もちさん㊙情報'], url:null,
+      reactions:[{e:'🔥',n:8,a:true},{e:'❤️',n:6,a:false},{e:'✨',n:4,a:false}],
+      labels:[],
+      eval:{ comment:'前投稿の世界観を経済的フレーム（還元）で拡張しており、もちパワー神話の連続性が際立ちます。「うおおお」という感情爆発と𝑩𝑰𝑮𝑳𝑶𝑽𝑬の優雅なフォントの対比が絶妙です。感情の振り幅をそのまま文体に反映させる技法が独特。',
+        axes:[{l:'感情強度',s:95},{l:'ユーモア',s:88},{l:'創造性',s:84},{l:'社会接続性',s:80},{l:'素直さ',s:76}] }
+    },
+    { id:15, account:'moti', date:'2026-04-21', title:'',
+      body:`都度準備じゃなくて、毎日準備しておけばいい\n事が起こる前に対策しておいて最悪のパターンは知っていれば知っているだけいい`,
+      intent:null, categories:['認知・行動','思想'], url:null,
+      reactions:[{e:'💡',n:5,a:true},{e:'🎯',n:3,a:false}],
+      labels:[],
+      eval:{ comment:'「都度準備」から「常時準備」への思考転換は、認知的負荷を事前に分散させる設計思想です。最悪パターンを事前に知ることでレジリエンスを高めるという発想は、ストア哲学の「否定的想像」とも接続しています。',
+        axes:[{l:'行動性',s:89},{l:'明瞭性',s:85},{l:'思考深度',s:79},{l:'具体性',s:74},{l:'独自性',s:68}] }
+    }
+  ];
+
+  let currentFilter = 'all';
+  let activeId = null;
+  let paletteTargetId = null;
+  let selectedCats = [];
+
+  // ── MARKDOWN ──
+  function mdToHtml(text) {
+    return text.split('\n').map(line => {
+      if (line.startsWith('> ')) return `<blockquote>${esc(line.slice(2))}</blockquote>`;
+      if (line.startsWith('- ')) return `<div class="md-li">• ${esc(line.slice(2))}</div>`;
+      if (line === '') return '<div style="height:.5em"></div>';
+      return `<div class="md-line">${esc(line)}</div>`;
+    }).join('');
+  }
+
+  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function previewBody(text, max=200) {
+    if (text.length <= max) return { html: mdToHtml(text), truncated: false };
+    let cut = max;
+    while (cut > 80 && text[cut] !== '\n' && text[cut] !== '。' && text[cut] !== '！' && text[cut] !== '？') cut--;
+    return { html: mdToHtml(text.slice(0, cut)) + '<div class="md-line" style="color:var(--muted)">…</div>', truncated: true };
+  }
+
+  // ── RENDER CARD ──
+  function renderCard(p) {
+    const { html: bodyHtml, truncated } = previewBody(p.body);
+    const reacts = p.reactions.map(r => reactionHtml(p.id, r)).join('');
+    const cats   = p.categories.map(c => `<span class="cat-tag">${c}</span>`).join('');
+    const url    = p.url ? `<a class="post-url" href="${p.url}" target="_blank" onclick="event.stopPropagation()">🔗 ${p.url}</a>` : '';
+    const more   = truncated ? `<button class="more-btn" onclick="openDetail(${p.id})">もっと見る →</button>` : '';
+    const chips  = p.labels.length ? `<div class="card-labels">${p.labels.map(l => {
+      const lt = LABEL_TYPES.find(t => t.key === l.type);
+      return `<span class="label-chip">${lt.icon} ${lt.label}</span>`;
+    }).join('')}</div>` : '';
+    return `
+      <div class="post-card${activeId===p.id?' active':''}" id="card-${p.id}" onclick="openDetail(${p.id})">
+        <div class="post-meta">
+          <div class="post-account"><div class="post-avatar">${p.account[0]}</div><span class="post-acc-name">@${p.account}</span></div>
+          <span class="post-date">${p.date}</span>
+        </div>
+        ${p.title ? `<div class="post-title">${esc(p.title)}</div>` : ''}
+        <div class="post-body">${bodyHtml}</div>
+        ${more}${url}
+        <div class="cats">${cats}</div>
+        ${chips}
+        <div class="reactions-row" onclick="event.stopPropagation()">
+          ${reacts}
+          <button class="palette-btn" onclick="openPalette(event,${p.id})">＋</button>
+        </div>
+      </div>`;
+  }
+
+  function reactionHtml(postId, r) {
+    return `<span class="reaction${r.a?' active':''}" onclick="toggleR(event,${postId},'${r.e}')">${r.e}<span class="r-count">${r.n}</span></span>`;
+  }
+
+  function renderGrid() {
+    const list = currentFilter === 'all' ? posts : posts.filter(p => p.categories.includes(currentFilter));
+    document.getElementById('postsGrid').innerHTML = list.map(renderCard).join('');
+  }
+
+  // ── SIDEBAR ──
+  function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    document.getElementById('collapseBtn').textContent = sb.classList.toggle('col') ? '▶' : '◀';
+  }
+  function navTimeline(el) {
+    document.querySelectorAll('.sb-nav .nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    currentFilter = 'all'; closePanel(); renderGrid();
+    document.getElementById('topbarTitle').textContent = 'タイムライン';
+  }
+  function filterCat(el, cat) {
+    currentFilter = cat;
+    document.querySelectorAll('.sb-nav .nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    renderGrid();
+    if (activeId) { const p = posts.find(p => p.id === activeId); if (cat !== 'all' && !p.categories.includes(cat)) closePanel(); }
+  }
+
+  // ── REACTIONS ──
+  function toggleR(e, postId, emoji) {
+    e.stopPropagation();
+    const p = posts.find(p => p.id === postId);
+    const r = p.reactions.find(r => r.e === emoji);
+    r.a = !r.a; r.n += r.a ? 1 : -1;
+    renderGrid();
+    if (activeId === postId) refreshDetail(p);
+  }
+
+  // ── PALETTE ──
+  function buildPalette() {
+    document.getElementById('paletteGrid').innerHTML = PALETTE_EMOJIS.map(e =>
+      `<div class="p-emoji" onclick="addReaction('${e}')">${e}</div>`).join('');
+  }
+  function openPalette(e, postId) {
+    e.stopPropagation();
+    paletteTargetId = postId;
+    const pal = document.getElementById('rPalette');
+    pal.classList.add('open');
+    const br = e.currentTarget.getBoundingClientRect(), pr = pal.getBoundingClientRect();
+    let top = br.top - pr.height - 8;
+    if (top < 8) top = br.bottom + 8;
+    let left = br.left;
+    if (left + pr.width > window.innerWidth - 8) left = window.innerWidth - pr.width - 8;
+    pal.style.top = top + 'px'; pal.style.left = left + 'px';
+  }
+  function addReaction(emoji) {
+    if (!paletteTargetId) return;
+    const p = posts.find(p => p.id === paletteTargetId);
+    const ex = p.reactions.find(r => r.e === emoji);
+    if (ex) { ex.a = true; ex.n++; } else p.reactions.push({e:emoji,n:1,a:true});
+    closePalette(); renderGrid();
+    if (activeId === paletteTargetId) refreshDetail(p);
+  }
+  function closePalette() { document.getElementById('rPalette').classList.remove('open'); paletteTargetId = null; }
+  document.addEventListener('click', closePalette);
+
+  // ── LABELS ──
+  function labelTypeOf(key) { return LABEL_TYPES.find(t => t.key === key); }
+
+  function labelsHtml(postId) {
+    const p = posts.find(p => p.id === postId);
+    const rows = p.labels.map((l, i) => {
+      const lt = labelTypeOf(l.type);
+      return `<div class="label-row">
+        <span class="label-icon">${lt.icon}</span>
+        <div class="label-info">
+          <div class="label-name">${lt.label}</div>
+          ${l.url ? `<a class="label-url" href="${esc(l.url)}" target="_blank">${esc(l.url)}</a>` : ''}
+          ${l.memo ? `<div class="label-memo">${esc(l.memo)}</div>` : ''}
+        </div>
+        <button class="label-del" onclick="removeLabel(${postId},${i})" title="削除">✕</button>
+      </div>`;
+    }).join('');
+    return `<div class="labels-section">
+      <div class="labels-head">ラベル</div>
+      ${rows}
+      <button class="add-label-btn" onclick="showLabelForm(${postId})">＋ ラベルを追加</button>
+      <div id="labelForm-${postId}"></div>
+    </div>`;
+  }
+
+  function showLabelForm(postId) {
+    const opts = LABEL_TYPES.map(t => `<option value="${t.key}">${t.icon} ${t.label}</option>`).join('');
+    document.getElementById(`labelForm-${postId}`).innerHTML = `
+      <div class="label-form">
+        <div class="form-group">
+          <label class="form-label">種別</label>
+          <select class="form-select" id="lf-type-${postId}">${opts}</select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">URL（任意）</label>
+          <input class="form-input" id="lf-url-${postId}" type="url" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">メモ（任意）</label>
+          <textarea class="form-input" id="lf-memo-${postId}" style="min-height:56px;resize:vertical" placeholder="投稿日時・アカウントなど..."></textarea>
+        </div>
+        <div class="label-form-row">
+          <button class="form-submit-sm" onclick="addLabel(${postId})">追加</button>
+          <button class="cancel-btn" onclick="hideLabelForm(${postId})">キャンセル</button>
+        </div>
+      </div>`;
+  }
+
+  function hideLabelForm(postId) { document.getElementById(`labelForm-${postId}`).innerHTML = ''; }
+
+  function addLabel(postId) {
+    const p = posts.find(p => p.id === postId);
+    const type = document.getElementById(`lf-type-${postId}`).value;
+    const url  = document.getElementById(`lf-url-${postId}`).value.trim();
+    const memo = document.getElementById(`lf-memo-${postId}`).value.trim();
+    p.labels.push({ type, url, memo });
+    renderGrid(); refreshDetail(p);
+  }
+
+  function removeLabel(postId, idx) {
+    const p = posts.find(p => p.id === postId);
+    p.labels.splice(idx, 1);
+    renderGrid(); refreshDetail(p);
+  }
+
+  // ── PANEL: DETAIL ──
+  function openDetail(postId) {
+    activeId = postId; renderGrid();
+    document.getElementById('panelTitle').textContent = '投稿詳細';
+    refreshDetail(posts.find(p => p.id === postId));
+    document.getElementById('rightPanel').classList.add('open');
+  }
+
+  function refreshDetail(p) {
+    const bodyHtml  = mdToHtml(p.body);
+    const reacts    = p.reactions.map(r => reactionHtml(p.id, r)).join('');
+    const cats      = p.categories.map(c => `<span class="cat-tag">${c}</span>`).join('');
+    const intentHtml = p.intent ? `<div class="intent-box"><div class="intent-label">補足・意図</div><div class="intent-text">${esc(p.intent)}</div></div>` : '';
+    const urlHtml = p.url ? `<a class="d-url" href="${p.url}" target="_blank">🔗 ${p.url}</a>` : '';
+    const evalAxes = p.eval.axes.map(ax => `
+      <div class="eval-row">
+        <div class="eval-row-head"><span class="eval-axis-label">${ax.l}</span><span class="eval-score">${ax.s}</span></div>
+        <div class="eval-bar-bg"><div class="eval-bar" style="width:${ax.s}%"></div></div>
+      </div>`).join('');
+
+    document.getElementById('panelBody').innerHTML = `
+      <div class="detail-head">
+        <div class="avatar">${p.account[0]}</div>
+        <div><div class="d-acc">@${p.account}</div><div class="d-date">${p.date}</div></div>
+      </div>
+      ${p.title ? `<div class="d-title">${esc(p.title)}</div>` : ''}
+      <div class="d-body">${bodyHtml}</div>
+      ${intentHtml}${urlHtml}
+      <hr class="divider">
+      <div class="reactions-row" style="margin-bottom:14px">
+        ${reacts}
+        <button class="palette-btn" onclick="openPalette(event,${p.id})">＋</button>
+      </div>
+      <div class="cats" style="margin-bottom:4px">${cats}</div>
+      <hr class="divider">
+      ${labelsHtml(p.id)}
+      <hr class="divider">
+      <div class="eval-head">Claude 評価</div>
+      <div class="eval-comment">${esc(p.eval.comment)}</div>
+      <div class="eval-axes">${evalAxes}</div>`;
+  }
+
+  // ── PANEL: CREATE ──
+  function openCreate() {
+    activeId = null; selectedCats = []; renderGrid();
+    document.getElementById('panelTitle').textContent = '新規投稿';
+    const catToggles = ALL_CATS.map(c =>
+      `<span class="cat-toggle" onclick="toggleCatCreate(this,'${c}')">${c}</span>`).join('');
+    document.getElementById('panelBody').innerHTML = `
+      <div class="create-form">
+        <div class="form-group"><label class="form-label">タイトル（任意）</label><input class="form-input" type="text" placeholder="タイトルを入力..."></div>
+        <div class="form-group"><label class="form-label">本文</label><textarea class="form-textarea" placeholder="思考を書く…（Markdown対応）"></textarea></div>
+        <div class="form-group"><label class="form-label">補足・意図（任意）</label><textarea class="form-textarea" style="min-height:72px" placeholder="背景・経緯・補足メモ..."></textarea></div>
+        <div class="form-group"><label class="form-label">参考URL（任意）</label><input class="form-input" type="url" placeholder="https://..."></div>
+        <div class="form-group">
+          <label class="form-label">カテゴリ</label>
+          <div class="cat-toggles">${catToggles}</div>
+          <div class="cat-add-row"><input class="form-input" id="newCatInput" type="text" placeholder="新しいカテゴリ..."><button class="cat-add-btn" onclick="addCatToCreate()">追加</button></div>
+        </div>
+        <div class="form-group"><label class="form-label">アカウント</label><select class="form-select"><option>moti</option><option>moti2</option></select></div>
+        <button class="form-submit">投稿する</button>
+      </div>`;
+    document.getElementById('rightPanel').classList.add('open');
+  }
+
+  function toggleCatCreate(el, cat) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) selectedCats.push(cat);
+    else selectedCats = selectedCats.filter(c => c !== cat);
+  }
+  function addCatToCreate() {
+    const inp = document.getElementById('newCatInput'), val = inp.value.trim(); if (!val) return;
+    const el = document.createElement('span');
+    el.className = 'cat-toggle selected'; el.textContent = val;
+    el.onclick = () => toggleCatCreate(el, val);
+    selectedCats.push(val);
+    document.querySelector('.cat-toggles').appendChild(el); inp.value = '';
+  }
+
+  // ── PANEL: CATEGORY MGMT ──
+  function openCatMgmt() {
+    activeId = null; renderGrid();
+    document.getElementById('panelTitle').textContent = 'カテゴリ管理';
+    const counts = {};
+    posts.forEach(p => p.categories.forEach(c => counts[c] = (counts[c]||0)+1));
+    const rows = ALL_CATS.map(c => `
+      <div class="mgmt-row">
+        <div class="mgmt-row-left"><span>${c}</span><span class="mgmt-count">${counts[c]||0} 件</span></div>
+        <div class="mgmt-actions"><button class="mgmt-btn">編集</button><button class="mgmt-btn danger">削除</button></div>
+      </div>`).join('');
+    document.getElementById('panelBody').innerHTML = `
+      <div class="mgmt-section">
+        <div class="mgmt-title">カテゴリ一覧</div>${rows}
+        <div class="cat-add-row" style="margin-top:14px"><input class="form-input" type="text" placeholder="新しいカテゴリ名..."><button class="cat-add-btn">追加</button></div>
+      </div>`;
+    document.getElementById('rightPanel').classList.add('open');
+  }
+
+  // ── PANEL: REACTION MGMT ──
+  function openReactMgmt() {
+    activeId = null; renderGrid();
+    document.getElementById('panelTitle').textContent = 'リアクション管理';
+    const registered = [...new Set(posts.flatMap(p => p.reactions.map(r => r.e)))];
+    const rows = registered.map(e => `
+      <div class="mgmt-row">
+        <div class="mgmt-row-left"><span style="font-size:20px">${e}</span><span style="font-size:12px;color:var(--muted);font-family:monospace">U+${e.codePointAt(0).toString(16).toUpperCase()}</span></div>
+        <div class="mgmt-actions"><button class="mgmt-btn danger">削除</button></div>
+      </div>`).join('');
+    document.getElementById('panelBody').innerHTML = `
+      <div class="mgmt-section"><div class="mgmt-title">登録済みリアクション</div>${rows}</div>
+      <div class="mgmt-section">
+        <div class="mgmt-title">カスタム絵文字を追加</div>
+        <div class="emoji-upload-box"><span>🖼</span>画像をドロップ（PNG / GIF）<br><span style="font-size:11px">横長・GIF可</span></div>
+        <div class="form-group"><label class="form-label">スラッグ</label><input class="form-input" type="text" placeholder=":emoji-name:"></div>
+        <button class="form-submit" style="margin-top:8px">登録する</button>
+      </div>`;
+    document.getElementById('rightPanel').classList.add('open');
+  }
+
+  function closePanel() { activeId = null; document.getElementById('rightPanel').classList.remove('open'); renderGrid(); }
+
+  buildPalette();
+  renderGrid();
+</script>
+</body>
+</html>
