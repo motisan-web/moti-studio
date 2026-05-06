@@ -1,10 +1,22 @@
 # 現在の作業状態
 
-> 最終更新: 2026-05-06
+> 最終更新: 2026-05-07
 
 ---
 
 ## 直近で完了したこと
+
+（`change/phase5-audit-and-eval-protocol.md`）
+
+- **UIとAPIの整合性監査** — APIはあるがUIがない機能を発見・修正
+- **検索UI追加** — トップバーに検索フォーム（デバウンス、ESCクリア）
+- **ランダムボタン追加** — トップバーに🎲ランダムボタン
+- **evalパネルにリプライ表示** — `replies[]` を「Claude リプライ」セクションで表示
+- **submitEditのバグ修正** — PUT を2回呼んでいたのを1回に統合
+- **spec/api.md 更新** — handlers 実態・PUT categories・reactions/search/random を追加
+- **eval-logic.md に評価プロトコル追記** — 評価コメント文章・リプライ文章の詳細プロトコル
+- **claude-modes.md のリプライモード詳細化** — replies 追記手順・JSON構造を明文化
+- **CLAUDE.md todo 整理** — 完了済み2件を削除（Xserver設定・リアクション絵文字UI）
 
 （`change/phase3-ui.md`）
 
@@ -41,8 +53,8 @@
 
 ## 次にやること
 
-- Xserver 初回デプロイ実施（FTPでアップロード → パーミッション設定 → 動作確認）
 - data/ サブモジュール化（プライベートリポジトリ作成後に `tools/submodule-setup.sh` 実行）
+- 実際に「評価して」「リプライして」を試してみてプロトコルを検証・調整
 - スマホ対応（後回し・最終的には作る）
 
 ---
@@ -56,6 +68,8 @@
 - **スマホ対応は未実装**。意図的に後回し。PCブラウザ専用で開発を進める
 - **`tools/seed-posts.php`** は冪等でない（実行のたびに別IDで重複作成される）
 - ローカル: http://git15.local / 本番: d00e.motisan.info
+- **`write_eval.php` は JSON 丸ごと上書き**。リプライ追記時は既存の replies[] を保持して渡すこと
+- **カテゴリ管理パネルは閲覧のみ**。`categories.json` へのグローバル追加/削除APIは未実装（投稿フォームから付与した新カテゴリはその投稿のみに反映）
 
 ---
 

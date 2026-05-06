@@ -1,6 +1,6 @@
 # Claude操作モード仕様
 
-> 最終更新: 2026-05-06
+> 最終更新: 2026-05-07
 
 Claude APIは使用しない。Claude CLI（チャット）がPHPヘルパーを経由してファイル操作を行う。
 直接JSONを大量に読み書きせず、PHPスクリプトを通じて必要な情報だけを取得する。
@@ -73,13 +73,47 @@ account: moti
 
 ### 4. リプライモード
 
-**読むべきファイル**: なし
+**読むべきファイル**: `spec/eval-logic.md`（リプライコメントの文章プロトコル参照）
 
 **手順**:
 1. もちさんから投稿IDと指示を受け取る（例: `20260504_abc123 3つの視点で語って`）
 2. `php api/cli/get_post.php --id=20260504_abc123` → 投稿内容を取得
-3. 指示に従ってコメントを生成
-4. `php api/cli/write_eval.php` でrepliesに追記
+3. 既存の eval ファイルを確認: `php api/cli/get_post.php --id=20260504_abc123` で eval があれば replies を保持
+4. 既存 eval を取得するには `php api/cli/get_unevaluated.php` ではなく、直接 eval ファイルを読む:
+   ```
+   php api/cli/write_eval.php --id=20260504_abc123 --dry-run
+   ```
+   （または eval/post_id.json を直接 cat して確認）
+5. 指示に従ってコメントを生成（eval-logic.md のリプライプロトコル参照）
+6. 既存の eval JSON に replies を追記して write_eval.php で書き込む:
+
+```bash
+# 既存evalを読んでrepliesに追記する形でJSONを組み立てて渡す
+php api/cli/write_eval.php --id=20260504_abc123 --json='{"evaluation":{...既存...},"replies":[...既存...+新規]}'
+```
+
+**repliesへの追記時の注意**:
+- 既存の `replies[]` を必ず保持したまま新しいreplyを末尾に追加する
+- `write_eval.php` は JSON を丸ごと上書きするため、既存データを含めた完全なJSONを渡すこと
+- `generated_at` は現在時刻（ISO 8601形式）を設定する
+
+**reply_id の命名**:
+- 既存の replies 数 + 1 を3桁ゼロ埋め: `reply_001`, `reply_002`, ...
+
+**リプライJSONの構造**（eval-logic.md 参照）:
+```json
+{
+  "id": "reply_003",
+  "instruction": "3つの視点で語って",
+  "comments": [
+    { "label": "批判的視点", "body": "...", "moti_reply": null },
+    { "label": "共感的視点", "body": "...", "moti_reply": null },
+    { "label": "実用的視点", "body": "...", "moti_reply": null }
+  ],
+  "requested_at": "2026-05-07T10:00:00",
+  "generated_at": "2026-05-07T10:00:05"
+}
+```
 
 ---
 

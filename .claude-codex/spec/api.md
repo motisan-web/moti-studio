@@ -1,6 +1,6 @@
 # APIエンドポイント仕様
 
-> 最終更新: 2026-05-06
+> 最終更新: 2026-05-07
 
 ---
 
@@ -13,10 +13,8 @@ api/
   index.php              ← エントリーポイント（ルーター）
   handlers/
     auth.php
-    posts.php
-    reactions.php
-    comments.php
-    labels.php
+    posts.php            ← react/comment/label のサブリソースも含む
+    reactions.php        ← カスタム絵文字の GET/POST/DELETE
     evals.php
     search.php
     accounts.php
@@ -25,6 +23,8 @@ api/
     json.php             ← JSON読み書きユーティリティ
     response.php         ← JSONレスポンス整形
 ```
+
+> `comments.php` / `labels.php` は独立していない。posts.php に統合済み。
 
 ### URLルール
 
@@ -53,6 +53,13 @@ POST   api/evals/{id}/request
 GET    api/accounts
 GET    api/accounts/{id}
 PUT    api/accounts/{id}
+
+GET    api/reactions
+POST   api/reactions
+DELETE api/reactions/{slug}
+
+GET    api/search?q={query}
+GET    api/posts/random
 ```
 
 `.htaccess` ですべて `api/index.php` に向ける。
@@ -151,7 +158,9 @@ PUT    api/accounts/{id}
 投稿1件を返す。
 
 ### PUT api/posts/{id}
-本文・タイトル・intent・url・archive_at を更新可。categories / labels / reactions はそれぞれ専用エンドポイントで操作。
+`title` / `body` / `intent` / `url` / `archive_at` / `categories` を更新可。
+`categories` もこのエンドポイントの body に含めて一括更新できる。
+`labels` / `reactions` はそれぞれ専用サブリソースエンドポイントで操作。
 
 ### DELETE api/posts/{id}
 物理削除。通常はアーカイブ（`archive_at` 設定）を使い、削除は補助的に用意する。
@@ -223,9 +232,24 @@ Claude APIとの連携詳細は `spec/claude-integration.md` に定義予定。
 
 ### GET api/search?q={query}
 全文検索。`body` と `title` と `intent` を対象にする。カーソルページング対応。
+クエリパラメータ `before`（カーソル）/ `limit`（最大50）あり。
 
 ### GET api/posts/random
 ランダム1件を返す。アーカイブ済みは除外。
+
+---
+
+## カスタム絵文字（リアクション管理）
+
+### GET api/reactions
+登録済みカスタム絵文字一覧。`{ "data": { "emojis": [...] } }`
+
+### POST api/reactions
+マルチパートフォームで画像アップロード。
+フィールド: `image`（ファイル）/ `slug`（英小文字・数字・`_-` のみ）/ `label`（任意）
+
+### DELETE api/reactions/{slug}
+スラッグを指定して削除。画像ファイルは残る（参照のみ削除）。
 
 ---
 
