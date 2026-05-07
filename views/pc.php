@@ -489,8 +489,14 @@ function reactionsHtml(p) {
 
 // ── MARKDOWN ─────────────────────────────────────────────
 
+function decodeEntities(s) {
+  return String(s)
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+}
+
 function mdToHtml(text) {
-  return (text || '').split('\n').map(line => {
+  return decodeEntities(text || '').split('\n').map(line => {
     if (line.startsWith('> ')) return `<blockquote>${esc(line.slice(2))}</blockquote>`;
     if (line.startsWith('- '))  return `<div class="md-li">• ${esc(line.slice(2))}</div>`;
     if (line === '')             return '<div style="height:.5em"></div>';
@@ -814,6 +820,7 @@ async function submitEdit(postId) {
       no_eval:    document.getElementById('ef-no-eval').checked,
     });
     await api('PUT', `posts/${postId}`, { categories: selectedCats });
+    selectedCats.forEach(c => { if (!INIT.categories.includes(c)) INIT.categories.push(c); });
     activeId = postId;
     await refreshPost(postId);
     document.getElementById('panelTitle').textContent = '投稿詳細';
@@ -1010,6 +1017,10 @@ function evalHtml(evalData) {
 // ── PANEL: CREATE ─────────────────────────────────────────
 
 function openCreate() {
+  const panel = document.getElementById('rightPanel');
+  if (panel.classList.contains('open') && document.getElementById('panelTitle').textContent === '新規投稿') {
+    return;
+  }
   activeId = null; selectedCats = []; renderGrid();
   document.getElementById('panelTitle').textContent = '新規投稿';
   clearPanelActions();
@@ -1083,6 +1094,7 @@ async function submitCreate() {
       archive_at: archiveVal ? archiveVal + ':00' : null,
       no_eval:    document.getElementById('cf-no-eval').checked,
     });
+    selectedCats.forEach(c => { if (!INIT.categories.includes(c)) INIT.categories.push(c); });
     closePanel(); await loadPosts();
   } catch(err) {
     alert(err.message);

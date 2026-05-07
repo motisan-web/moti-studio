@@ -7,6 +7,15 @@ $idx = isset($segments[3]) ? (int)$segments[3] : null;
 
 // ── helpers ──────────────────────────────────────────────
 
+function categories_merge(array $new_cats): void {
+    $path    = DATA_DIR . '/categories.json';
+    $current = json_read($path)['categories'] ?? [];
+    $merged  = array_values(array_unique(array_merge($current, $new_cats)));
+    if ($merged !== $current) {
+        json_write($path, ['categories' => $merged]);
+    }
+}
+
 function post_path(string $id): string {
     return DATA_POSTS . "/{$id}.json";
 }
@@ -185,6 +194,7 @@ if ($id === null) {
         ];
 
         json_write(post_path($id), $post);
+        categories_merge($post['categories'] ?? []);
         res_ok($post, 201);
     }
 
@@ -214,6 +224,9 @@ if ($method === 'PUT') {
         }
     }
     post_save($post);
+    if (array_key_exists('categories', $body)) {
+        categories_merge($post['categories'] ?? []);
+    }
     res_ok($post);
 }
 
