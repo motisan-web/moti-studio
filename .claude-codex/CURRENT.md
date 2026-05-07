@@ -6,85 +6,124 @@
 
 ## 直近で完了したこと
 
-（評価プロトコル完成 + 全投稿評価完了）
+### Phase 1 バグ修正（change/phase1-bug-fixes.md）
+- **`&#039;` HTMLエンティティ表示バグ修正** — `decodeEntities()` を `mdToHtml` に追加。`data/posts/20260506_a215f8.json` のデータも修正
+- **UIカテゴリ作成で `categories.json` が更新されない** — `api/handlers/posts.php` に `categories_merge()` を追加。POST/PUT 時に自動マージ。JS 側も `INIT.categories` を即時更新
+- **ヘッダー「投稿する」ボタンでフォームリセット** — `openCreate()` が新規投稿パネル表示中は再初期化しないよう修正
 
-- **未評価9件の評価・カテゴリ付与を完了** — e65a26 / e9325a / e9fb34 / ea4b2a / f17e26 / f23ad5 / fb6fe4 / 2ba8ed / 81c896。全件 `get_unevaluated.php` が空配列を返す状態になった
-- **eval-logic.md に2ルールを明文化**
-  - カテゴリは評価と同時に必ず付与する（`set_categories.php` で書き込む）
-  - 確認が必要なものは先にまとめて1回で聞く。後から割り込まない
-- **context ファイル新規作成**
-  - `moti-life-goals.md` — 生活設計・将来目標
-  - `moti-consumption.md` — 消費・購入・ベストバイ履歴（Claude、家3回など）
-- **context ファイル更新**
-  - `moti-cognitive-style.md` — 社会構造への批評と美学、知性の多次元性、動機付けられた推論への自覚を追記
-  - `moti-expression.md` — 社会観察ユーモア、特殊フォントの別事例を追記
-- **INDEX.md** — 新規2ファイルをエントリ追加
+### Phase 2 基盤整備（途中）
+- **CLIスクリプト洗い出し完了** — `get_unevaluated.php`（no_eval未考慮・エージェント指定なし）と `post_draft.php`（no_eval/strength未設定）が未対応と判明。修正は次フェーズへ
+- **CODEX.md 作成**（change/codex-md-created.md） — Codex評価エージェント向けルールドキュメント。禁止事項・使用可能PHPコマンド・評価フォーマット・手順を定義
 
----
-
-## 次にやること
-
-1. **data/ サブモジュール化**（todo）
-3. **投稿詳細パネルにIDを表示**（todo）
-4. **「評価不要」状態を投稿につけられるようにする**（フォームも対応）（todo）
-5. **issue: ヘッダー「投稿する」ボタンでフォーム入力がリセットされる**
+### その他
+- **投稿ID表示・コピー機能** — 詳細パネルにID表示、クリックでコピー（非HTTPS対応フォールバック付き）
+- **「評価不要」フラグ** — `no_eval` フィールド追加。詳細パネルのトグル・作成/編集フォームのチェックボックスから操作可能
+- **コピートースト** — コピー時に「コピーしました」トーストを表示
+- **eval axes 旧フォーマット修正** — `normalizeAxes()` で object/array 両フォーマットを吸収。`20260506_aa002c` のデータも修正
+- **Wikipedia URL付与ロジック** — `spec/url-wiki-logic.md` 新規作成。`20260507_81c896`（レトリック）にURL追加・`20260502_4b6561`（フィトケミカル）に「言葉」カテゴリ追加
+- **sync Push 設計** — `spec/sync.md` に双方向同期（`--push` / `--both`）の設計を追記
+- **作業順序ルール明文化** — `CLAUDE.md` に「todo追加 → 実装 → change記録」の順序ルールを追記
 
 ---
 
-## 確定済みの評価ルール
+## Codex評価の設計決定事項（重要）
 
-- **1件ずつ確認** → OKが出てから書き込む（連続評価しない）
+次チャットで Codex 評価関連の実装に入る場合は必読。
+
+| 項目 | 決定内容 |
+|---|---|
+| 評価フィールド | `evals/{id}.json` に `codex_evaluation` を追加（`evaluation` とは独立） |
+| フォーマット | `context_comment`（文脈照合）+ `questions`（ソクラテス問い返し1〜3問）。スコアなし |
+| Codexの書き込み範囲 | `data/evals/*.json` のみ。`data/posts/*.json` は読み取り専用 |
+| カテゴリ | Codexは関与しない。Claudeが担当 |
+| 矛盾の扱い | 「矛盾」と断定せず「変化の可能性」として問い返す。context の記録日を考慮する |
+| 運用方式 | ChatGPT（Codex）を手動で立ち上げて CODEX.md を読ませて運用（API連携なし） |
+| Codex向けファイル | `CODEX.md`（プロジェクトルート）|
+
+---
+
+## 次にやること（推薦順）
+
+### Phase 2 残り
+1. **チップUI共通ドキュメント設計**（対話で決める）— 削除ボタン以外でも使うので設計先行
+2. **未対応CLIスクリプト修正** — `get_unevaluated.php`（`--agent` / `no_eval` 対応）・`post_draft.php`（`no_eval` フィールド追加）
+
+### Phase 3（UI改善）
+3. 「補足・意図」→「もちさんによる補足・意図」表記変更
+4. 削除ボタンにチップUI（アーカイブか完全削除か明示）
+5. 「もっと見る→」表記修正
+6. カテゴリタグクリックでフィルタリング
+7. 表示名ニックネーム/ID選択
+
+### Phase 4（評価システム拡張）
+8. `get_unevaluated.php` パラメーター対応
+9. 評価表示のエージェント切り替え（Claude評価 / Codex評価）
+
+### Phase 5（メディア・アップロード）
+10. カテゴリアイコン（絵文字 or 画像・SVG）
+11. アカウントアイコンアップロード
+12. 投稿への複数画像添付＋ギャラリー表示
+
+---
+
+## 確定済みの評価ルール（Claude評価）
+
+- **1件ずつ確認** → OKが出てから書き込む
 - **カテゴリは必ず付与** — 評価案と同時に提示し、OKが出たら `set_categories.php` で書き込む
 - **確認をまとめる** — 評価・カテゴリ・context更新案を一括提示してOKを取る
 - **コメント文数は柔軟** — 短い/ユーモア系は1〜2文、思想系は必要なだけ
 - **humor投稿** → replies[] に `instruction:"humor-reaction"` のひとことリプライを自動追加
-- **もち関連カテゴリ** → 短く乗っかる形、軸3以下でも可
-- **感じている投稿** → 姿勢として読み替えない。一般との差・トレードオフを示す
 - **カテゴリは comma-separated で渡す** — `set_categories.php --categories='A,B'`
-- **JSON書き込み・読み込みは確認不要**で進める
 - 詳細: `.claude-codex/spec/eval-logic.md`
-- もちさん文脈: `.claude-codex/context/INDEX.md` → 該当MDの順に読む
 
 ---
 
 ## 注意事項・既知の仕様
 
 - **Claude API は使わない**。Claudeがチャットでコマンドを実行しPHPヘルパー経由で処理する方式
-- **リアクションは加算のみ**（誰が押したか管理しない）
-- **アーカイブ判定**は `archive_at <= now()` を動的にチェック。物理移動はしない
-- **`data/`** は `.gitignore` 対象（ローカルのみ存在）。`tools/sync.php` でサーバー間同期する
-- **スマホ対応は未実装**。意図的に後回し。PCブラウザ専用で開発を進める
-- **`tools/seed-posts.php`** は冪等でない（実行のたびに別IDで重複作成される）
-- ローカル: http://git15.local / 本番: d00e.motisan.info
+- **Codex（ChatGPT）はAPIなしの手動運用**。CODEX.md を ChatGPT に読ませて評価させる
+- **`data/`** は `.gitignore` 対象（ローカルのみ存在）
+- **worktreeは使わない**。常に `main` ブランチに直接コミット
+- **作業順序厳守**: todo追加 → 実装 → change記録 の3ステップ。スキップ禁止
+- **Wikipedia URLロジック**: 語の定義説明投稿 + Wikipedia記事あり + url=null の場合に付与。詳細は `spec/url-wiki-logic.md`
+- **`evals/{id}.json` の旧フォーマット**: axes がオブジェクト形式のデータが一部存在。`normalizeAxes()` で吸収済み
+- **テストデータの日付問題**: 既存投稿が直近1週間に集中している。もちさんが手動で `created_at` を修正予定
+- ローカル: http://git15.local / 本番: https://d00e.motisan.info
 
 ---
 
 ## 現在のファイル構成
 
 ```
-.htaccess                    ← data/ 等の直接アクセス遮断・Xserver設定
-config.php                   ← DATA_DIR系パス定数
-index.php                    ← メインアプリ（認証・3ペインUI・全機能JS）
+CLAUDE.md                    ← プロジェクトルール・todo・issue（毎チャット必読）
+CODEX.md                     ← Codex評価エージェント向けルール（新規追加）
+config.php
+index.php                    ← エントリポイント（views/pc.php or sp.php に振り分け）
+views/
+  pc.php                     ← メインUI（認証・3ペイン・全機能JS/CSS インライン）
+  sp.php                     ← スマホ用（未実装）
 
 api/
   index.php                  ← ルーター
   lib/  handlers/  cli/
 
 .claude/
-  settings.json              ← Bash全許可 + WorktreeCreate ブロックフック
+  settings.json              ← Bash全許可
 
 .claude-codex/
-  CURRENT.md
+  CURRENT.md                 ← このファイル
   spec/
-    eval-logic.md / category-logic.md / claude-modes.md / data-schema.md / ...
+    eval-logic.md / category-logic.md / claude-modes.md
+    data-schema.md / sync.md / url-wiki-logic.md
   context/
-    INDEX.md
-    moti-social-stance.md / moti-cognitive-style.md
-    moti-expression.md / moti-tech.md
-    moti-life-goals.md / moti-consumption.md   ← 今回追加
+    INDEX.md + 各mdファイル
   change/
+    codex-md-created.md      ← 最新
+    phase1-bug-fixes.md
+    fix-eval-axes-format.md
     ...
 
 data/                        ← gitignore対象（ローカルのみ）
 tools/
+  sync.php                   ← Pull実装済み。Push（--push/--both）は未実装
 ```
