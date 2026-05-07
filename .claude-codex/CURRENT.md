@@ -6,49 +6,45 @@
 
 ## 直近で完了したこと
 
-（評価プロトコル整備 + 投稿評価）
+（評価プロトコル完成 + 全投稿評価完了）
 
-- **worktree廃止** — `.claude/settings.json` に WorktreeCreate ブロックフックを設置。CLAUDE.md にも Git運用ルール追記（mainに直接コミット）
-- **Bash全許可** — `.claude/settings.json` の permissions.allow に `Bash(*)`等を追加。確認なしで実行可
-- **eval-logic.md 復元・整備** — コメント文数制限を「柔軟」に変更。確定済みルール（humor-reaction・もち関連・一言投稿）追記
-- **category-logic.md** — 「言葉」カテゴリ追加
-- **context/ 整備** — moti-social-stance / moti-cognitive-style / moti-expression / moti-tech の4ファイル新規作成。投稿IDの記録を必須化
-- **評価済み** — aa002c / d5514c / dcf906（このセッション分）を含む計16件完了
-
----
-
-## 評価進捗
-
-**評価済み（16件）**:
-20260421_56345f / 20260506_12af34 / 20260506_210028 / 20260506_263278 / 20260506_341f73 / 20260506_39bd06 / 20260506_419d9d / 20260506_41f626 / 20260506_4da5ca / 20260506_55dca2 / 20260506_5fceae / 20260506_638803 / 20260506_69118b / 20260506_aa002c / 20260506_d5514c / 20260506_dcf906
-
-**未評価（残り15件）**:
-72aa8f / 782fe2 / 7e423a / 7f1861 / 887907 / 90a38e / 9c64a9 / a215f8 / e65a26 / e9325a / e9fb34 / ea4b2a / f17e26 / f23ad5 / fb6fe4（すべて 20260506_ プレフィックス）
-
-※ 20260507_ 系: 2ba8ed / 81c896 も残り（CLAUDE.mdの未評価リストからは一旦除外されていたが要確認）
+- **未評価9件の評価・カテゴリ付与を完了** — e65a26 / e9325a / e9fb34 / ea4b2a / f17e26 / f23ad5 / fb6fe4 / 2ba8ed / 81c896。全件 `get_unevaluated.php` が空配列を返す状態になった
+- **eval-logic.md に2ルールを明文化**
+  - カテゴリは評価と同時に必ず付与する（`set_categories.php` で書き込む）
+  - 確認が必要なものは先にまとめて1回で聞く。後から割り込まない
+- **context ファイル新規作成**
+  - `moti-life-goals.md` — 生活設計・将来目標
+  - `moti-consumption.md` — 消費・購入・ベストバイ履歴（Claude、家3回など）
+- **context ファイル更新**
+  - `moti-cognitive-style.md` — 社会構造への批評と美学、知性の多次元性、動機付けられた推論への自覚を追記
+  - `moti-expression.md` — 社会観察ユーモア、特殊フォントの別事例を追記
+- **INDEX.md** — 新規2ファイルをエントリ追加
 
 ---
 
 ## 次にやること
 
-1. **評価の続き** — 上記未評価15件を1件ずつ評価・書き込み
-2. **Xserver 初回デプロイ** — FTPアップロード → パーミッション設定 → `tools/deploy-check.php` で確認
-3. **data/ サブモジュール化**（todo）
-4. **投稿詳細パネルにIDを表示**（todo）
-5. **「評価不要」状態を投稿につけられるようにする**（フォームも対応）（todo）
+1. **Xserver 初回デプロイ** — FTPアップロード → パーミッション設定 → `tools/deploy-check.php` で確認
+2. **data/ サブモジュール化**（todo）
+3. **投稿詳細パネルにIDを表示**（todo）
+4. **「評価不要」状態を投稿につけられるようにする**（フォームも対応）（todo）
+5. **issue: ヘッダー「投稿する」ボタンでフォーム入力がリセットされる**
 
 ---
 
 ## 確定済みの評価ルール
 
 - **1件ずつ確認** → OKが出てから書き込む（連続評価しない）
+- **カテゴリは必ず付与** — 評価案と同時に提示し、OKが出たら `set_categories.php` で書き込む
+- **確認をまとめる** — 評価・カテゴリ・context更新案を一括提示してOKを取る
 - **コメント文数は柔軟** — 短い/ユーモア系は1〜2文、思想系は必要なだけ
 - **humor投稿** → replies[] に `instruction:"humor-reaction"` のひとことリプライを自動追加
 - **もち関連カテゴリ** → 短く乗っかる形、軸3以下でも可
 - **感じている投稿** → 姿勢として読み替えない。一般との差・トレードオフを示す
-- **カテゴリは comma-separated で渡す** — `set_categories.php --categories='A,B'`（JSON配列ではない）
+- **カテゴリは comma-separated で渡す** — `set_categories.php --categories='A,B'`
 - **JSON書き込み・読み込みは確認不要**で進める
 - 詳細: `.claude-codex/spec/eval-logic.md`
+- もちさん文脈: `.claude-codex/context/INDEX.md` → 該当MDの順に読む
 
 ---
 
@@ -83,8 +79,10 @@ api/
   spec/
     eval-logic.md / category-logic.md / claude-modes.md / data-schema.md / ...
   context/
-    INDEX.md / moti-social-stance.md / moti-cognitive-style.md
+    INDEX.md
+    moti-social-stance.md / moti-cognitive-style.md
     moti-expression.md / moti-tech.md
+    moti-life-goals.md / moti-consumption.md   ← 今回追加
   change/
     ...
 

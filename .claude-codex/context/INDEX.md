@@ -12,6 +12,8 @@
 | [moti-cognitive-style.md](moti-cognitive-style.md) | 情報処理・認識論・断言と留保 | 2026-05-07 |
 | [moti-expression.md](moti-expression.md) | 表現スタイル・ユーモア・自己観察形式 | 2026-05-07 |
 | [moti-tech.md](moti-tech.md) | テクノロジーとの関わり方 | 2026-05-07 |
+| [moti-life-goals.md](moti-life-goals.md) | 生活設計・お金・将来目標 | 2026-05-07 |
+| [moti-consumption.md](moti-consumption.md) | 消費・購入・ベストバイ履歴 | 2026-05-07 |
 
 ---
 
