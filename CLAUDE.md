@@ -117,6 +117,8 @@ Claude APIは使用しない。Claudeがチャットでコマンドを実行しP
 - [ ] ヘッダーの「投稿する」ボタンを押すと、フォームにすでに入力済みの内容がリセット（無効化）される
 
 ## todo
+- [ ] JS を機能単位でファイル分割する（現在 `views/pc.php` にインライン）
+- [ ] CSS をファイル分割する（現在 `views/pc.php` にインライン）
 - [ ] data/ をプライベートリポジトリでsubmodule化
 - [ ] スマホ対応UI（後回し、最終的には作る）
 - [ ] sync Push 実装（ローカル→本番、`--push` / `--both` 対応）— 実装前に読むこと: `.claude-codex/spec/sync.md`（設計全体）/ `tools/sync.php`（既存Pull実装）/ `api/handlers/sync.php`（本番エンドポイント、POST追加）/ `api/index.php`（syncルート確認）

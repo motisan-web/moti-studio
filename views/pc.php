@@ -144,6 +144,8 @@
     .no-eval-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; transition: background .12s, color .12s; }
     .no-eval-btn.active { background: #f3e9ff; color: #7c3aed; border-color: #c4b5fd; }
     .no-eval-btn:hover { background: var(--surface-hover, var(--border)); }
+    .copy-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(12px); background: #1a1a2e; color: #fff; font-size: 13px; padding: 8px 18px; border-radius: 20px; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 9999; }
+    .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .d-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; line-height: 1.4; }
     .d-body { font-size: 13px; color: var(--text); }
     .d-body .md-li { padding-left: 14px; }
@@ -509,9 +511,10 @@ function esc(s) {
 
 function copyText(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).catch(() => copyTextFallback(text));
+    navigator.clipboard.writeText(text).then(showCopyToast).catch(() => { copyTextFallback(text); showCopyToast(); });
   } else {
     copyTextFallback(text);
+    showCopyToast();
   }
 }
 function copyTextFallback(text) {
@@ -522,6 +525,12 @@ function copyTextFallback(text) {
   el.select();
   document.execCommand('copy');
   document.body.removeChild(el);
+}
+function showCopyToast() {
+  const t = document.getElementById('copyToast');
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1600);
 }
 
 // ── SIDEBAR ──────────────────────────────────────────────
@@ -1238,5 +1247,6 @@ loadPosts();
 </script>
 
 <?php endif; ?>
+<div id="copyToast" class="copy-toast">コピーしました</div>
 </body>
 </html>
