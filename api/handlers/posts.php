@@ -178,6 +178,7 @@ if ($id === null) {
             'repost'         => (bool)($body['repost'] ?? false),
             'repost_from'    => trim($body['repost_from'] ?? '') ?: null,
             'archive_at'     => $body['archive_at']  ?? null,
+            'no_eval'        => (bool)($body['no_eval'] ?? false),
             'categorized_at' => null,
             'created_at'     => $now,
             'updated_at'     => $now,
@@ -206,7 +207,7 @@ if ($method === 'PUT') {
     auth_check();
 
     $body    = req_json();
-    $allowed = ['title', 'body', 'intent', 'url', 'archive_at', 'categories'];
+    $allowed = ['title', 'body', 'intent', 'url', 'archive_at', 'categories', 'no_eval'];
     foreach ($allowed as $key) {
         if (array_key_exists($key, $body)) {
             $post[$key] = is_string($body[$key]) ? trim($body[$key]) : $body[$key];

@@ -137,6 +137,13 @@
     .detail-head .avatar { width: 38px; height: 38px; font-size: 16px; }
     .d-acc { font-size: 14px; font-weight: 600; }
     .d-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .post-id-row { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+    .post-id-label { font-size: 10px; font-weight: 600; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+    .post-id-value { font-size: 11px; color: var(--muted); font-family: monospace; }
+    .no-eval-row { display: flex; align-items: center; padding: 6px 0; }
+    .no-eval-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; transition: background .12s, color .12s; }
+    .no-eval-btn.active { background: #f3e9ff; color: #7c3aed; border-color: #c4b5fd; }
+    .no-eval-btn:hover { background: var(--surface-hover, var(--border)); }
     .d-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; line-height: 1.4; }
     .d-body { font-size: 13px; color: var(--text); }
     .d-body .md-li { padding-left: 14px; }
@@ -656,6 +663,7 @@ function renderDetail(p, evalData) {
       <div class="avatar">${esc(p.account_id[0])}</div>
       <div><div class="d-acc">@${esc(p.account_id)}</div><div class="d-date">${p.created_at.slice(0,10)}</div></div>
     </div>
+    <div class="post-id-row"><span class="post-id-label">ID</span><span class="post-id-value" title="クリックでコピー" onclick="navigator.clipboard.writeText('${p.id}')" style="cursor:pointer">${esc(p.id)}</span></div>
     ${p.title ? `<div class="d-title">${esc(p.title)}</div>` : ''}
     <div class="d-body">${mdToHtml(p.body)}</div>
     ${intentHtml}${urlHtml}${archiveHtml}
@@ -665,11 +673,22 @@ function renderDetail(p, evalData) {
     </div>
     ${cats ? `<div class="cats" style="margin-bottom:4px">${cats}</div>` : ''}
     <hr class="divider">
+    <div class="no-eval-row">
+      <button class="no-eval-btn${p.no_eval ? ' active' : ''}" onclick="toggleNoEval('${p.id}',${p.no_eval ? 'true' : 'false'})">
+        ${p.no_eval ? '🚫 評価不要' : '📊 評価する'}
+      </button>
+    </div>
+    <hr class="divider">
     ${labelsHtml(p)}
     <hr class="divider">
     ${commentsHtml(p)}
     <hr class="divider">
     ${evalHtml(evalData)}`;
+}
+
+async function toggleNoEval(postId, current) {
+  await api('PUT', `posts/${postId}`, { no_eval: !current });
+  await refreshPost(postId);
 }
 
 async function refreshPost(postId) {
@@ -725,6 +744,11 @@ async function openEdit(postId) {
           <button class="cat-add-btn" onclick="document.getElementById('ef-archive').value=''">クリア</button>
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="ef-no-eval"${post.no_eval ? ' checked' : ''}> 評価不要にする
+        </label>
+      </div>
       <button class="form-submit" id="efSubmit" onclick="submitEdit('${postId}')">保存する</button>
     </div>`;
   document.getElementById('rightPanel').classList.add('open');
@@ -761,6 +785,7 @@ async function submitEdit(postId) {
       intent:     document.getElementById('ef-intent').value.trim(),
       url:        document.getElementById('ef-url').value.trim(),
       archive_at: archiveVal ? archiveVal + ':00' : null,
+      no_eval:    document.getElementById('ef-no-eval').checked,
     });
     await api('PUT', `posts/${postId}`, { categories: selectedCats });
     activeId = postId;
@@ -980,6 +1005,11 @@ function openCreate() {
           <button class="cat-add-btn" onclick="setArchiveWeek('cf-archive')">1週間後</button>
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="cf-no-eval"> 評価不要にする
+        </label>
+      </div>
       <button class="form-submit" id="cfSubmit" onclick="submitCreate()">投稿する</button>
     </div>`;
   document.getElementById('rightPanel').classList.add('open');
@@ -1016,6 +1046,7 @@ async function submitCreate() {
       url:        document.getElementById('cf-url').value.trim(),
       categories: selectedCats,
       archive_at: archiveVal ? archiveVal + ':00' : null,
+      no_eval:    document.getElementById('cf-no-eval').checked,
     });
     closePanel(); await loadPosts();
   } catch(err) {
