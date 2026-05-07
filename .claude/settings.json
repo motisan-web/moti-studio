@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [],
+    "deny": []
+  },
+  "hooks": {
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"continue\": false, \"stopReason\": \"worktreeは使用しません。mainブランチに直接コミットしてください。\"}'",
+            "shell": "bash"
+          }
+        ]
+      }
+    ]
+  }
+}
