@@ -507,6 +507,23 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => copyTextFallback(text));
+  } else {
+    copyTextFallback(text);
+  }
+}
+function copyTextFallback(text) {
+  const el = document.createElement('textarea');
+  el.value = text;
+  el.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+}
+
 // ── SIDEBAR ──────────────────────────────────────────────
 
 function toggleSidebar() {
@@ -663,7 +680,7 @@ function renderDetail(p, evalData) {
       <div class="avatar">${esc(p.account_id[0])}</div>
       <div><div class="d-acc">@${esc(p.account_id)}</div><div class="d-date">${p.created_at.slice(0,10)}</div></div>
     </div>
-    <div class="post-id-row"><span class="post-id-label">ID</span><span class="post-id-value" title="クリックでコピー" onclick="navigator.clipboard.writeText('${p.id}')" style="cursor:pointer">${esc(p.id)}</span></div>
+    <div class="post-id-row"><span class="post-id-label">ID</span><span class="post-id-value" title="クリックでコピー" onclick="copyText('${p.id}')" style="cursor:pointer">${esc(p.id)}</span></div>
     ${p.title ? `<div class="d-title">${esc(p.title)}</div>` : ''}
     <div class="d-body">${mdToHtml(p.body)}</div>
     ${intentHtml}${urlHtml}${archiveHtml}
