@@ -111,3 +111,4 @@ Claude APIは使用しない。Claudeがチャットでコマンドを実行しP
 - [ ] 投稿に「評価不要」状態をつけられるようにする（投稿フォームも対応）
 - [ ] data/ をプライベートリポジトリでsubmodule化
 - [ ] スマホ対応UI（後回し、最終的には作る）
+- [ ] sync Push 実装（ローカル→本番、`--push` / `--both` 対応）— 実装前に読むこと: `.claude-codex/spec/sync.md`（設計全体）/ `tools/sync.php`（既存Pull実装）/ `api/handlers/sync.php`（本番エンドポイント、POST追加）/ `api/index.php`（syncルート確認）
