@@ -89,8 +89,16 @@ if ($is_auth) {
 
     /* ── MAIN ── */
     .main-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-    .topbar { height: var(--header-h); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: var(--surface); flex-shrink: 0; }
-    .topbar-title { font-size: 14px; font-weight: 600; color: var(--muted); }
+    .topbar { height: var(--header-h); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; gap: 12px; background: var(--surface); flex-shrink: 0; }
+    .topbar-title { font-size: 14px; font-weight: 600; color: var(--muted); flex-shrink: 0; }
+    .topbar-search { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 320px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 0 12px; transition: border-color .12s; }
+    .topbar-search:focus-within { border-color: var(--accent); }
+    .topbar-search input { border: none; background: none; outline: none; font-size: 13px; color: var(--text); width: 100%; padding: 6px 0; }
+    .topbar-search input::placeholder { color: var(--muted); }
+    .topbar-search .search-icon { color: var(--muted); font-size: 13px; flex-shrink: 0; }
+    .topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .random-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: border-color .12s, color .12s; }
+    .random-btn:hover { border-color: var(--accent); color: var(--accent); }
     .post-btn { background: var(--accent); color: #fff; border: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .12s; }
     .post-btn:hover { background: var(--accent2); }
     .content-area { flex: 1; display: flex; overflow: hidden; }
@@ -333,7 +341,16 @@ if ($is_auth) {
 <div class="main-wrap">
   <div class="topbar">
     <span class="topbar-title" id="topbarTitle">タイムライン</span>
-    <button class="post-btn" onclick="openCreate()">＋ 投稿する</button>
+    <div class="topbar-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="検索…"
+        oninput="onSearchInput(this.value)"
+        onkeydown="if(event.key==='Escape'){this.value='';onSearchInput('')}">
+    </div>
+    <div class="topbar-right">
+      <button class="random-btn" onclick="openRandom()" title="ランダムな投稿を表示">🎲 ランダム</button>
+      <button class="post-btn" onclick="openCreate()">＋ 投稿する</button>
+    </div>
   </div>
   <div class="content-area">
     <main class="main-content">
@@ -432,6 +449,42 @@ async function buildPalette() {
   const custom = customEmojis.map(e =>
     `<div class="p-custom-emoji" title="${esc(e.label)}" onclick="addReaction(':${esc(e.slug)}:')"><img src="${esc(e.image)}" alt="${esc(e.label)}"></div>`).join('');
   document.getElementById('paletteGrid').innerHTML = standard + custom;
+}
+
+// ── SEARCH ───────────────────────────────────────────────
+
+let searchTimer = null;
+
+function onSearchInput(val) {
+  clearTimeout(searchTimer);
+  if (!val.trim()) {
+    document.getElementById('topbarTitle').textContent = currentView === 'archive' ? 'アーカイブ' : 'タイムライン';
+    loadPosts();
+    return;
+  }
+  searchTimer = setTimeout(() => doSearch(val.trim()), 300);
+}
+
+async function doSearch(q) {
+  document.getElementById('topbarTitle').textContent = `「${q}」の検索結果`;
+  document.getElementById('postsGrid').innerHTML = '<div class="empty-state">検索中…</div>';
+  try {
+    const data = await api('GET', `search?q=${encodeURIComponent(q)}&limit=50`);
+    posts = data.posts;
+    renderGrid();
+  } catch(err) {
+    document.getElementById('postsGrid').innerHTML = `<div class="empty-state">${esc(err.message)}</div>`;
+  }
+}
+
+async function openRandom() {
+  try {
+    const post = await api('GET', 'posts/random');
+    if (!post) { alert('投稿がありません'); return; }
+    const idx = posts.findIndex(p => p.id === post.id);
+    if (idx < 0) posts.unshift(post);
+    openDetail(post.id);
+  } catch(err) { alert(err.message); }
 }
 
 // ── LOAD & RENDER ─────────────────────────────────────────
@@ -777,9 +830,8 @@ async function submitEdit(postId) {
       intent:     document.getElementById('ef-intent').value.trim(),
       url:        document.getElementById('ef-url').value.trim(),
       archive_at: archiveVal ? archiveVal + ':00' : null,
+      categories: selectedCats,
     });
-    // カテゴリは別途 PUT で更新（既存APIはcategoriesをPUTに含まないため直接JSONを更新）
-    await api('PUT', `posts/${postId}`, { categories: selectedCats });
     activeId = postId;
     await refreshPost(postId);
     document.getElementById('panelTitle').textContent = '投稿詳細';
@@ -958,10 +1010,30 @@ function evalHtml(evalData) {
       <div class="eval-row-head"><span class="eval-axis-label">${esc(ax.label)}</span><span class="eval-score">${ax.score}</span></div>
       <div class="eval-bar-bg"><div class="eval-bar" style="width:${ax.score}%"></div></div>
     </div>`).join('');
+
+  const replies = (evalData.replies || []).map(r => {
+    const comments = (r.comments || []).map(c => `
+      <div class="comment-row" style="flex-direction:column;gap:4px">
+        ${c.label ? `<div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">${esc(c.label)}</div>` : ''}
+        <div class="comment-body">${esc(c.body)}</div>
+        ${c.moti_reply ? `<div class="comment-body" style="color:var(--muted);border-left:2px solid var(--border);padding-left:8px;margin-top:4px">↩ ${esc(c.moti_reply)}</div>` : ''}
+      </div>`).join('');
+    const genAt = r.generated_at ? r.generated_at.slice(0,16).replace('T',' ') : '未生成';
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:8px">📨 ${esc(r.instruction)} <span style="font-weight:400">${genAt}</span></div>
+      ${comments || '<div class="eval-none" style="font-size:12px">コメント未生成</div>'}
+    </div>`;
+  }).join('');
+
+  const repliesSection = evalData.replies && evalData.replies.length
+    ? `<hr class="divider"><div class="eval-head">Claude リプライ</div>${replies}`
+    : '';
+
   return `<div class="eval-head">Claude 評価</div>
     <div class="eval-comment">${esc(ev.comment)}</div>
     ${radarChart(ev.axes)}
-    <div class="eval-axes">${axes}</div>`;
+    <div class="eval-axes">${axes}</div>
+    ${repliesSection}`;
 }
 
 // ── PANEL: CREATE ─────────────────────────────────────────
