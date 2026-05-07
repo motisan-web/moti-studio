@@ -982,19 +982,28 @@ function radarChart(axes) {
   </div>`;
 }
 
+function normalizeAxes(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  // 旧フォーマット: {key: score} → [{key, label, score}]
+  const labelMap = {empathy:'共感性',originality:'独自性',specificity:'具体性',introspection:'内省度',expandability:'発展可能性',emotion:'感情強度',criticality:'批評性',humor:'ユーモア',sociality:'社会接続性',actionability:'行動性',expertise:'専門性',clarity:'明瞭性',curiosity:'好奇心',depth:'思考深度',vulnerability:'素直さ',timeliness:'時事性',creativity:'創造性'};
+  return Object.entries(raw).map(([k,v]) => ({key:k, label:labelMap[k]||k, score:Number(v)}));
+}
+
 function evalHtml(evalData) {
   if (!evalData || !evalData.evaluation) {
     return `<div class="eval-head">Claude 評価</div><div class="eval-none">未評価です</div>`;
   }
   const ev   = evalData.evaluation;
-  const axes = (ev.axes || []).map(ax => `
+  const axesArr = normalizeAxes(ev.axes);
+  const axes = axesArr.map(ax => `
     <div>
       <div class="eval-row-head"><span class="eval-axis-label">${esc(ax.label)}</span><span class="eval-score">${ax.score}</span></div>
       <div class="eval-bar-bg"><div class="eval-bar" style="width:${ax.score}%"></div></div>
     </div>`).join('');
   return `<div class="eval-head">Claude 評価</div>
     <div class="eval-comment">${esc(ev.comment)}</div>
-    ${radarChart(ev.axes)}
+    ${radarChart(axesArr)}
     <div class="eval-axes">${axes}</div>`;
 }
 
