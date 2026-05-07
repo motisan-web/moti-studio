@@ -22,5 +22,6 @@ match ($resource) {
     'evals'     => require __DIR__ . '/handlers/evals.php',
     'search'    => require __DIR__ . '/handlers/search.php',
     'reactions' => require __DIR__ . '/handlers/reactions.php',
+    'sync'      => require __DIR__ . '/handlers/sync.php',
     default     => res_err('Not found', 404),
 };
