@@ -1,41 +1,54 @@
 # 現在の作業状態
 
-> 最終更新: 2026-05-06
+> 最終更新: 2026-05-07
 
 ---
 
 ## 直近で完了したこと
 
-（`change/phase4-infra.md`）
+（評価プロトコル整備 + 投稿評価）
 
-- **`.htaccess`（ルート）** — `data/` `api/lib/` `api/cli/` `.claude-codex/` への直接HTTPアクセス遮断、Xserver向けPHP設定追加
-- **`tools/sync.php`** — セッション認証済みブラウザからアクセスするデータ同期ツール。JSONバンドル形式でエクスポート/インポート（`data/` + `img/reactions/`）
-- **`tools/deploy-check.php`** — `php tools/deploy-check.php` で実行するデプロイ前チェック（PHP版・ファイル・ディレクトリ・権限・拡張）
-- **`tools/submodule-setup.sh`** — `data/` をプライベートGitリポジトリ化してサブモジュール登録する手順スクリプト
+- **worktree廃止** — `.claude/settings.json` に WorktreeCreate ブロックフックを設置。CLAUDE.md にも Git運用ルール追記（mainに直接コミット）
+- **Bash全許可** — `.claude/settings.json` の permissions.allow に `Bash(*)`等を追加。確認なしで実行可
+- **eval-logic.md 復元・整備** — コメント文数制限を「柔軟」に変更。確定済みルール（humor-reaction・もち関連・一言投稿）追記
+- **category-logic.md** — 「言葉」カテゴリ追加
+- **context/ 整備** — moti-social-stance / moti-cognitive-style / moti-expression / moti-tech の4ファイル新規作成。投稿IDの記録を必須化
+- **評価済み** — aa002c / d5514c / dcf906（このセッション分）を含む計16件完了
 
-（`change/phase3-ui.md`）
+---
 
-- **投稿編集UI** — 詳細パネルヘッダーに ✏️/🗑 ボタン、`openEdit` / `submitEdit` / `deletePost`
-- **アーカイブ期限設定** — 作成・編集フォームに `datetime-local` + 1週間後ボタン
-- **アカウント切替UI** — サイドバークリックでドロップダウン、タイムラインをアカウントIDでフィルタリング
-- **アカウント情報編集** — 表示名・カラー（カラーピッカー）・アイコン形状を編集、保存後サイドバー即時反映
-- **レーダーチャート** — SVGで5軸グラフ、evalパネルのコメント直下に表示
-- **リアクション絵文字登録UI** — 画像アップロード（mime検証）+ slug登録、削除も可、パレットに反映
-- **`api/handlers/reactions.php`** — GET / POST / DELETE
-- **PUT posts/{id}** に `categories` を追加
+## 評価進捗
 
-（`change/phase1-eval-and-cli.md`）
+**評価済み（16件）**:
+20260421_56345f / 20260506_12af34 / 20260506_210028 / 20260506_263278 / 20260506_341f73 / 20260506_39bd06 / 20260506_419d9d / 20260506_41f626 / 20260506_4da5ca / 20260506_55dca2 / 20260506_5fceae / 20260506_638803 / 20260506_69118b / 20260506_aa002c / 20260506_d5514c / 20260506_dcf906
 
-- **`spec/eval-logic.md`** — 17軸評価の選定ルール・スコア基準・コメントトーンを設計
-- **`api/cli/` 全7本** — get_uncategorized / get_unevaluated / get_unposted_drafts / get_post / set_categories / write_eval / post_draft
+**未評価（残り15件）**:
+72aa8f / 782fe2 / 7e423a / 7f1861 / 887907 / 90a38e / 9c64a9 / a215f8 / e65a26 / e9325a / e9fb34 / ea4b2a / f17e26 / f23ad5 / fb6fe4（すべて 20260506_ プレフィックス）
+
+※ 20260507_ 系: 2ba8ed / 81c896 も残り（CLAUDE.mdの未評価リストからは一旦除外されていたが要確認）
 
 ---
 
 ## 次にやること
 
-- **Xserver 初回デプロイ** — FTPアップロード → パーミッション設定（644/755）→ `tools/deploy-check.php` で確認 → 動作確認
-- **data/ サブモジュール化** — GitHubにプライベートリポジトリ作成後 `bash tools/submodule-setup.sh <URL>` を実行
-- **スマホ対応**（後回し・最終的には作る）
+1. **評価の続き** — 上記未評価15件を1件ずつ評価・書き込み
+2. **Xserver 初回デプロイ** — FTPアップロード → パーミッション設定 → `tools/deploy-check.php` で確認
+3. **data/ サブモジュール化**（todo）
+4. **投稿詳細パネルにIDを表示**（todo）
+5. **「評価不要」状態を投稿につけられるようにする**（フォームも対応）（todo）
+
+---
+
+## 確定済みの評価ルール
+
+- **1件ずつ確認** → OKが出てから書き込む（連続評価しない）
+- **コメント文数は柔軟** — 短い/ユーモア系は1〜2文、思想系は必要なだけ
+- **humor投稿** → replies[] に `instruction:"humor-reaction"` のひとことリプライを自動追加
+- **もち関連カテゴリ** → 短く乗っかる形、軸3以下でも可
+- **感じている投稿** → 姿勢として読み替えない。一般との差・トレードオフを示す
+- **カテゴリは comma-separated で渡す** — `set_categories.php --categories='A,B'`（JSON配列ではない）
+- **JSON書き込み・読み込みは確認不要**で進める
+- 詳細: `.claude-codex/spec/eval-logic.md`
 
 ---
 
@@ -57,44 +70,24 @@
 .htaccess                    ← data/ 等の直接アクセス遮断・Xserver設定
 config.php                   ← DATA_DIR系パス定数
 index.php                    ← メインアプリ（認証・3ペインUI・全機能JS）
-index.html                   ← 静的デモ（設計参照用）
 
 api/
-  .htaccess                  ← 全リクエストを index.php へ
-  index.php                  ← ルーター（auth/posts/accounts/evals/search/reactions）
-  lib/
-    json.php / response.php / auth.php
-  handlers/
-    auth.php / posts.php / accounts.php / evals.php / search.php / reactions.php
-  cli/
-    get_uncategorized.php / get_unevaluated.php / get_unposted_drafts.php
-    get_post.php / set_categories.php / write_eval.php / post_draft.php
+  index.php                  ← ルーター
+  lib/  handlers/  cli/
 
-img/
-  reactions/                 ← カスタム絵文字画像（web公開）
-
-data/                        ← gitignore対象（ローカルのみ）
-  accounts/moti.json
-  auth/moti.json
-  posts/*.json
-  evals/*.json
-  reactions.json / categories.json
-  drafts/                    ← Claude投稿モード用MD
-  drafts/posted/             ← post_draft.php 実行後の退避先
-
-tools/
-  setup-auth.php             ← パスワード設定CLI
-  seed-posts.php             ← デモデータ投入CLI（冪等でない）
-  sync.php                   ← ブラウザからデータ同期（要ログイン）
-  deploy-check.php           ← デプロイ前チェックCLI
-  submodule-setup.sh         ← data/ サブモジュール化スクリプト
+.claude/
+  settings.json              ← Bash全許可 + WorktreeCreate ブロックフック
 
 .claude-codex/
   CURRENT.md
   spec/
-    ui-layout.md / data-schema.md / auth.md / api.md
-    claude-modes.md / category-logic.md / eval-logic.md
+    eval-logic.md / category-logic.md / claude-modes.md / data-schema.md / ...
+  context/
+    INDEX.md / moti-social-stance.md / moti-cognitive-style.md
+    moti-expression.md / moti-tech.md
   change/
-    initial-implementation.md / phase1-eval-and-cli.md
-    phase3-ui.md / phase4-infra.md
+    ...
+
+data/                        ← gitignore対象（ローカルのみ）
+tools/
 ```
